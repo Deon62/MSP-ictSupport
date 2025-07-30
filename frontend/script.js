@@ -233,23 +233,33 @@ function showSection(sectionId) {
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
-    }
-    
-    // Update sidebar navigation
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    
-    const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
-    if (activeLink) {
-        activeLink.classList.add('active');
-    }
-    
-    // Load data for specific sections
-    if (sectionId === 'dashboard' && isLoggedIn) {
-        loadDashboard();
-    } else if (sectionId === 'tickets' && isLoggedIn) {
-        loadTickets();
+        
+        // Update sidebar navigation
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+        
+        // Load data for specific sections
+        if (sectionId === 'dashboard' && isLoggedIn) {
+            loadDashboard();
+        } else if (sectionId === 'tickets' && isLoggedIn) {
+            loadTickets();
+        }
+    } else {
+        console.error(`Section with id '${sectionId}' not found`);
+        // Fallback to dashboard if section doesn't exist
+        const dashboardSection = document.getElementById('dashboard');
+        if (dashboardSection) {
+            dashboardSection.classList.add('active');
+            if (isLoggedIn) {
+                loadDashboard();
+            }
+        }
     }
 }
 
@@ -357,8 +367,7 @@ async function loadFloors() {
         console.log('No building selected, clearing floor dropdown');
         return;
     }
-    
-    // Find the building object
+   
     const building = buildings.find(b => b.name === selectedBuilding);
     if (!building) {
         console.log('Building not found in buildings array');
@@ -403,7 +412,7 @@ async function loadFloors() {
         
         console.log('Floor dropdown populated with', sortedFloors.length, 'options');
         
-        // Also load departments for this building
+      
         console.log('Loading departments after floors...');
         loadAllDepartments();
     } catch (error) {
@@ -497,6 +506,7 @@ function updateDashboardStats(data) {
     animateStatCard('pending-tickets', stats.pending || 0, ((stats.pending || 0) / total) * 100);
     animateStatCard('in-progress-tickets', stats.in_progress || 0, ((stats.in_progress || 0) / total) * 100);
     animateStatCard('resolved-tickets', stats.resolved || 0, ((stats.resolved || 0) / total) * 100);
+    animateStatCard('closed-tickets', stats.closed || 0, ((stats.closed || 0) / total) * 100);
     
     // Update tickets count
     const ticketsCountEl = document.getElementById('tickets-count');
@@ -557,7 +567,7 @@ function displayTickets(ticketsToShow) {
     }
     
     container.innerHTML = ticketsToShow.map(ticket => `
-        <div class="ticket-card" onclick="openTicketModal(${ticket.id})" data-ticket-id="${ticket.id}">
+        <div class="ticket-card" data-ticket-id="${ticket.id}">
             <div class="ticket-header">
                 <div class="ticket-info">
                     <div class="ticket-title">${ticket.issue_type}</div>
@@ -574,11 +584,11 @@ function displayTickets(ticketsToShow) {
             <div class="ticket-details">
                 <div class="ticket-detail">
                     <i class="fas fa-building"></i>
-                    <span>${ticket.building} - Floor ${ticket.floor}</span>
+                    <span>${ticket.building_name || 'Unknown'} - Floor ${ticket.floor_label || 'Unknown'}</span>
                 </div>
                 <div class="ticket-detail">
                     <i class="fas fa-users"></i>
-                    <span>${ticket.department}</span>
+                    <span>${ticket.department_name || 'Unknown'}</span>
                 </div>
                 <div class="ticket-detail">
                     <i class="fas fa-user"></i>
@@ -597,8 +607,11 @@ function displayTickets(ticketsToShow) {
                 <span>${ticket.notification}</span>
             </div>` : ''}
             <div class="ticket-actions">
-                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); openTicketModal(${ticket.id})">
-                    <i class="fas fa-eye"></i> View Details
+                <button class="btn btn-sm btn-primary" onclick="openTicketModal(${ticket.id})">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteTicket(${ticket.id})">
+                    <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
         </div>
@@ -624,12 +637,20 @@ function displayRecentTickets(recentTickets) {
             <div class="ticket-details">
                 <div class="ticket-detail">
                     <i class="fas fa-building"></i>
-                    <span>${ticket.building} - Floor ${ticket.floor}</span>
+                    <span>${ticket.building_name || 'Unknown'} - Floor ${ticket.floor_label || 'Unknown'}</span>
                 </div>
                 <div class="ticket-detail">
                     <i class="fas fa-calendar"></i>
                     <span>${new Date(ticket.created_at).toLocaleDateString()}</span>
                 </div>
+            </div>
+            <div class="ticket-actions">
+                <button class="btn btn-sm btn-primary" onclick="openTicketModal(${ticket.id})">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteTicket(${ticket.id})">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
             </div>
         </div>
     `).join('');
@@ -881,11 +902,11 @@ function openTicketModal(ticketId) {
                 <div class="detail-row">
                     <div class="detail-item">
                         <label><i class="fas fa-building"></i> Location</label>
-                        <span>${ticket.building} - Floor ${ticket.floor}</span>
+                        <span>${ticket.building_name || 'Unknown'} - Floor ${ticket.floor_label || 'Unknown'}</span>
                     </div>
                     <div class="detail-item">
                         <label><i class="fas fa-users"></i> Department</label>
-                        <span>${ticket.department}</span>
+                        <span>${ticket.department_name || 'Unknown'}</span>
                     </div>
                 </div>
                 
@@ -927,6 +948,12 @@ function openTicketModal(ticketId) {
                 </div>
             </div>
             ` : ''}
+            
+            <div class="ticket-modal-actions">
+                <button class="btn btn-danger" onclick="deleteTicket(${ticket.id})">
+                    <i class="fas fa-trash"></i> Delete Ticket
+                </button>
+            </div>
         </div>
     `;
     
@@ -941,23 +968,33 @@ function closeTicketModal() {
     currentTicket = null;
 }
 
-async function deleteTicket() {
-    if (!currentTicket) {
-        showNotification('No ticket selected for deletion', 'error');
+async function deleteTicket(ticketId) {
+    if (!currentUser) {
+        showNotification('Please login to delete tickets.', 'error');
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete this ticket?\n\nIssue: ${currentTicket.issue_type}\nStatus: ${currentTicket.status}`)) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) {
+        showNotification('Ticket not found', 'error');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete this ticket?\n\nIssue: ${ticket.issue_type}\nStatus: ${ticket.status}`)) {
         return;
     }
     
     try {
-        await makeAPIRequest(`/tickets/${currentTicket.id}`, {
+        await makeAPIRequest(`/tickets/${ticketId}`, {
             method: 'DELETE'
         });
         
         showNotification('Ticket deleted successfully!', 'success');
-        closeTicketModal();
+        
+        // Close modal if open
+        if (currentTicket && currentTicket.id === ticketId) {
+            closeTicketModal();
+        }
         
         // Refresh tickets and dashboard
         await loadTickets();

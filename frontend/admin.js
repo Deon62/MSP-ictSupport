@@ -1,4 +1,3 @@
-// Admin Module JavaScript
 class AdminModule {
     constructor() {
         this.token = localStorage.getItem('admin_token');
@@ -13,19 +12,19 @@ class AdminModule {
     }
 
     setupEventListeners() {
-        // Login form
+    
         document.getElementById('login-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.handleLogin();
         });
 
-        // Password change form
+        
         document.getElementById('password-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.handlePasswordChange();
         });
 
-        // Navigation
+      
         document.querySelectorAll('.nav-item[data-section]').forEach(item => {
             item.addEventListener('click', (e) => {
                 this.showSection(e.target.dataset.section);
@@ -130,19 +129,18 @@ class AdminModule {
     }
 
     showSection(sectionName) {
-        // Update navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
         document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
 
-        // Update content
+      
         document.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
         });
         document.getElementById(`${sectionName}-section`).classList.add('active');
 
-        // Update title
+       
         const titles = {
             'tickets': 'Tickets',
             'departments': 'Departments',

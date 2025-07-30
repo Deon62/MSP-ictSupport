@@ -255,3 +255,23 @@ def get_dashboard():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500 
+
+@tickets_bp.route('/tickets/<int:ticket_id>', methods=['DELETE'])
+def delete_ticket(ticket_id):
+    """Delete a ticket"""
+    try:
+        ticket = SupportTicket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
+        db.session.delete(ticket)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Ticket deleted successfully',
+            'ticket_id': ticket_id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500 
