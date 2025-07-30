@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from models.building import Building
 from models.department import Department
+from models.floor import Floor
 
 general_bp = Blueprint('general', __name__)
 
@@ -33,6 +34,17 @@ def get_departments():
         departments = Department.query.all()
         return jsonify({
             'departments': [dept.to_dict() for dept in departments]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@general_bp.route('/floors/<int:building_id>', methods=['GET'])
+def get_floors_by_building(building_id):
+    """Get floors by building ID"""
+    try:
+        floors = Floor.query.filter_by(building_id=building_id).all()
+        return jsonify({
+            'floors': [floor.to_dict() for floor in floors]
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

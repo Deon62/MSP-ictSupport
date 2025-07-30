@@ -5,9 +5,9 @@ class SupportTicket(db.Model):
     __tablename__ = 'support_tickets'
     
     id = db.Column(db.Integer, primary_key=True)
-    building = db.Column(db.String(100), nullable=False)
-    floor = db.Column(db.String(50), nullable=False)
-    department = db.Column(db.String(100), nullable=False)
+    building_id = db.Column(db.Integer, db.ForeignKey('buildings.id'), nullable=False)
+    floor_id = db.Column(db.Integer, db.ForeignKey('floors.id'), nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
     issue_type = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     contact_person = db.Column(db.String(100))
@@ -20,12 +20,20 @@ class SupportTicket(db.Model):
     resolved_at = db.Column(db.DateTime)
     notes = db.Column(db.Text)
     
+    # Relationships
+    building = db.relationship('Building', backref='tickets')
+    floor = db.relationship('Floor', backref='tickets')
+    department = db.relationship('Department', backref='tickets')
+    
     def to_dict(self):
         return {
             'id': self.id,
-            'building': self.building,
-            'floor': self.floor,
-            'department': self.department,
+            'building_id': self.building_id,
+            'building_name': self.building.name if self.building else None,
+            'floor_id': self.floor_id,
+            'floor_label': self.floor.label if self.floor else None,
+            'department_id': self.department_id,
+            'department_name': self.department.name if self.department else None,
             'issue_type': self.issue_type,
             'description': self.description,
             'contact_person': self.contact_person,

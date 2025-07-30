@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from models.support_ticket import SupportTicket
+from models.building import Building
+from models.department import Department
+from models.floor import Floor
 from database import db
 
 tickets_bp = Blueprint('tickets', __name__)
@@ -17,11 +20,44 @@ def create_ticket():
             if field not in data:
                 return jsonify({'error': f'Missing required field: {field}'}), 400
         
+        # Handle building (can be ID or name)
+        building_id = None
+        if isinstance(data['building'], int):
+            building_id = data['building']
+        else:
+            building = Building.query.filter_by(name=data['building']).first()
+            if building:
+                building_id = building.id
+            else:
+                return jsonify({'error': f'Building not found: {data["building"]}'}), 400
+        
+        # Handle department (can be ID or name)
+        department_id = None
+        if isinstance(data['department'], int):
+            department_id = data['department']
+        else:
+            department = Department.query.filter_by(name=data['department']).first()
+            if department:
+                department_id = department.id
+            else:
+                return jsonify({'error': f'Department not found: {data["department"]}'}), 400
+        
+        # Handle floor (can be ID or name)
+        floor_id = None
+        if isinstance(data['floor'], int):
+            floor_id = data['floor']
+        else:
+            floor = Floor.query.filter_by(building_id=building_id, label=data['floor']).first()
+            if floor:
+                floor_id = floor.id
+            else:
+                return jsonify({'error': f'Floor not found: {data["floor"]} in building {data["building"]}'}), 400
+        
         # Create new ticket
         ticket = SupportTicket(
-            building=data['building'],
-            floor=data['floor'],
-            department=data['department'],
+            building_id=building_id,
+            floor_id=floor_id,
+            department_id=department_id,
             issue_type=data['issue_type'],
             description=data['description'],
             contact_person=data.get('contact_person', ''),
@@ -59,9 +95,21 @@ def get_tickets():
         if status:
             query = query.filter(SupportTicket.status == status)
         if building:
-            query = query.filter(SupportTicket.building == building)
+            # Handle both building name and ID
+            if building.isdigit():
+                query = query.filter(SupportTicket.building_id == int(building))
+            else:
+                building_obj = Building.query.filter_by(name=building).first()
+                if building_obj:
+                    query = query.filter(SupportTicket.building_id == building_obj.id)
         if department:
-            query = query.filter(SupportTicket.department == department)
+            # Handle both department name and ID
+            if department.isdigit():
+                query = query.filter(SupportTicket.department_id == int(department))
+            else:
+                dept_obj = Department.query.filter_by(name=department).first()
+                if dept_obj:
+                    query = query.filter(SupportTicket.department_id == dept_obj.id)
         if priority:
             query = query.filter(SupportTicket.priority == priority)
         if search:
@@ -98,50 +146,47 @@ def get_tickets():
 def get_ticket(ticket_id):
     """Get a specific ticket by ID"""
     try:
-        ticket = SupportTicket.query.get_or_404(ticket_id)
-        return jsonify(ticket.to_dict()), 200
+        ticket = SupportTicket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
+        return jsonify({'ticket': ticket.to_dict()}), 200
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @tickets_bp.route('/tickets/<int:ticket_id>/status', methods=['PUT'])
 def update_ticket_status(ticket_id):
-    """Update ticket status with notifications"""
+    """Update ticket status"""
     try:
+        ticket = SupportTicket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
         data = request.get_json()
         new_status = data.get('status')
-        notes = data.get('notes', '')
+        notes = data.get('notes')
         
         if not new_status:
             return jsonify({'error': 'Status is required'}), 400
         
-        ticket = SupportTicket.query.get_or_404(ticket_id)
-        old_status = ticket.status
+        valid_statuses = ['pending', 'in_progress', 'resolved', 'closed', 'cancelled']
+        if new_status not in valid_statuses:
+            return jsonify({'error': 'Invalid status'}), 400
+        
         ticket.status = new_status
-        ticket.notes = notes
-        ticket.updated_at = datetime.now()
+        if notes:
+            ticket.notes = notes
         
-        # Set resolved_at if status is resolved
         if new_status == 'resolved':
-            ticket.resolved_at = datetime.now()
+            ticket.resolved_at = datetime.utcnow()
         
+        ticket.updated_at = datetime.utcnow()
         db.session.commit()
-        
-        # Create notification message
-        status_messages = {
-            'pending': 'Your ticket is pending review',
-            'in_progress': 'ICT team is working on your issue',
-            'resolved': 'Your issue has been resolved',
-            'closed': 'Ticket has been closed'
-        }
-        
-        notification = status_messages.get(new_status, f'Ticket status updated to {new_status}')
         
         return jsonify({
             'message': 'Ticket status updated successfully',
-            'ticket_id': ticket.id,
-            'status': ticket.status,
-            'notification': notification,
-            'status_changed': old_status != new_status
+            'ticket': ticket.to_dict()
         }), 200
         
     except Exception as e:
@@ -150,25 +195,25 @@ def update_ticket_status(ticket_id):
 
 @tickets_bp.route('/tickets/<int:ticket_id>/assign', methods=['PUT'])
 def assign_ticket(ticket_id):
-    """Assign ticket to ICT staff member"""
+    """Assign ticket to a user"""
     try:
+        ticket = SupportTicket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
         data = request.get_json()
-        assigned_to = data.get('assigned_to')
+        assigned_to_id = data.get('assigned_to_id')
         
-        if not assigned_to:
-            return jsonify({'error': 'Assigned_to is required'}), 400
+        if not assigned_to_id:
+            return jsonify({'error': 'Assigned user ID is required'}), 400
         
-        ticket = SupportTicket.query.get_or_404(ticket_id)
-        ticket.assigned_to = assigned_to
-        ticket.updated_at = datetime.now()
-        
+        ticket.assigned_to_id = assigned_to_id
+        ticket.updated_at = datetime.utcnow()
         db.session.commit()
         
         return jsonify({
             'message': 'Ticket assigned successfully',
-            'ticket_id': ticket.id,
-            'assigned_to': ticket.assigned_to,
-            'notification': f'Ticket #{ticket.id} assigned to {assigned_to}'
+            'ticket': ticket.to_dict()
         }), 200
         
     except Exception as e:
@@ -177,14 +222,15 @@ def assign_ticket(ticket_id):
 
 @tickets_bp.route('/dashboard', methods=['GET'])
 def get_dashboard():
-    """Get dashboard overview with statistics"""
+    """Get dashboard statistics"""
     try:
         # Get counts by status
         status_counts = {
             'pending': SupportTicket.query.filter_by(status='pending').count(),
             'in_progress': SupportTicket.query.filter_by(status='in_progress').count(),
             'resolved': SupportTicket.query.filter_by(status='resolved').count(),
-            'closed': SupportTicket.query.filter_by(status='closed').count()
+            'closed': SupportTicket.query.filter_by(status='closed').count(),
+            'cancelled': SupportTicket.query.filter_by(status='cancelled').count()
         }
         
         # Get counts by priority
@@ -195,17 +241,14 @@ def get_dashboard():
             'urgent': SupportTicket.query.filter_by(priority='urgent').count()
         }
         
-        # Get counts by building
-        buildings = db.session.query(SupportTicket.building, db.func.count(SupportTicket.id)).group_by(SupportTicket.building).all()
-        building_counts = {building: count for building, count in buildings}
-        
         # Get recent tickets
-        recent_tickets = SupportTicket.query.order_by(SupportTicket.created_at.desc()).limit(5).all()
+        recent_tickets = SupportTicket.query.order_by(
+            SupportTicket.created_at.desc()
+        ).limit(5).all()
         
         return jsonify({
             'status_counts': status_counts,
             'priority_counts': priority_counts,
-            'building_counts': building_counts,
             'recent_tickets': [ticket.to_dict() for ticket in recent_tickets],
             'total_tickets': sum(status_counts.values())
         }), 200
