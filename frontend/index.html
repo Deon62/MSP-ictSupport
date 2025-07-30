@@ -247,13 +247,15 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="building"><i class="fas fa-building"></i> Where are you located? *</label>
-                            <select id="building" name="building" required onchange="loadDepartments()">
+                            <select id="building" name="building" required onchange="loadFloors()">
                                 <option value="">Choose your building</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="floor"><i class="fas fa-layer-group"></i> Which floor? *</label>
-                            <input type="text" id="floor" name="floor" placeholder="e.g., 15th floor" required>
+                            <select id="floor" name="floor" required>
+                                <option value="">Select floor</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="department"><i class="fas fa-users"></i> Your Department *</label>
@@ -265,14 +267,14 @@
                             <label for="issue-type"><i class="fas fa-exclamation-triangle"></i> What's the problem? *</label>
                             <select id="issue-type" name="issue_type" required>
                                 <option value="">Tell us what's wrong</option>
-                                <option value="WiFi Connectivity">🌐 WiFi Connection Issues</option>
-                                <option value="Printer Issues">🖨️ Printer Problems</option>
-                                <option value="Projector Setup">📽️ Projector Setup</option>
-                                <option value="Computer Hardware">💻 Computer Hardware</option>
-                                <option value="Software Installation">📦 Software Installation</option>
-                                <option value="Email Issues">📧 Email Problems</option>
-                                <option value="Network Issues">🌍 Network Issues</option>
-                                <option value="Other">❓ Something Else</option>
+                                <option value="WiFi Connectivity"> WiFi Connection Issues</option>
+                                <option value="Printer Issues"> Printer Problems</option>
+                                <option value="Projector Setup"> Projector Setup</option>
+                                <option value="Computer Hardware"> Computer Hardware</option>
+                                <option value="Software Installation"> Software Installation</option>
+                                <option value="Email Issues"> Email Problems</option>
+                                <option value="Network Issues"> Network Issues</option>
+                                <option value="Other"> Something Else</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -499,10 +501,10 @@
                 <div class="filter-group">
                     <label><i class="fas fa-sort"></i> Sort By</label>
                     <select id="sort-filter" onchange="filterTickets()">
-                        <option value="newest">📅 Newest First</option>
-                        <option value="oldest">📅 Oldest First</option>
-                        <option value="priority">⚡ Priority</option>
-                        <option value="status">🏷️ Status</option>
+                        <option value="newest"> Newest First</option>
+                        <option value="oldest"> Oldest First</option>
+                        <option value="priority"> Priority</option>
+                        <option value="status"> Status</option>
                     </select>
                 </div>
             </div>

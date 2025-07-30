@@ -285,12 +285,21 @@ async function loadInitialData() {
     if (!isLoggedIn) return;
     
     try {
+        console.log('Loading initial data...');
+        
+        // Load buildings first
+        await loadBuildings();
+        
+        // Load departments immediately (not just when building is selected)
+        await loadAllDepartments();
+        
+        // Load other data
         await Promise.all([
-            loadBuildings(),
-            loadDepartments(),
             loadTickets(),
             loadDashboard()
         ]);
+        
+        console.log('Initial data loaded successfully');
     } catch (error) {
         console.error('Error loading initial data:', error);
         showNotification('Error loading data. Please refresh the page.', 'error');
@@ -300,41 +309,130 @@ async function loadInitialData() {
 // Load buildings
 async function loadBuildings() {
     try {
+        console.log('Loading buildings...');
         const data = await makeAPIRequest('/buildings');
         buildings = data.buildings;
+        console.log('Buildings loaded:', buildings);
         
         // Populate building dropdowns
         const buildingSelects = document.querySelectorAll('#building, #building-filter');
+        console.log('Found building selects:', buildingSelects.length);
+        
         buildingSelects.forEach(select => {
             select.innerHTML = '<option value="">Select Building</option>';
             buildings.forEach(building => {
                 const option = document.createElement('option');
                 option.value = building.name;
-                option.textContent = `${building.name} (${building.floors} floors)`;
+                option.textContent = building.name;
                 select.appendChild(option);
             });
         });
+        
+        console.log('Building dropdowns populated with', buildings.length, 'options');
     } catch (error) {
         console.error('Error loading buildings:', error);
     }
 }
 
-// Load departments
-async function loadDepartments() {
+// Load floors by building
+async function loadFloors() {
+    console.log('loadFloors function called');
+    
+    const buildingSelect = document.getElementById('building');
+    const floorSelect = document.getElementById('floor');
+    
+    console.log('Building select found:', !!buildingSelect);
+    console.log('Floor select found:', !!floorSelect);
+    
+    if (!buildingSelect || !floorSelect) {
+        console.log('Building or floor select not found');
+        return;
+    }
+    
+    const selectedBuilding = buildingSelect.value;
+    console.log('Building selected:', selectedBuilding);
+    
+    if (!selectedBuilding) {
+        floorSelect.innerHTML = '<option value="">Select floor</option>';
+        console.log('No building selected, clearing floor dropdown');
+        return;
+    }
+    
+    // Find the building object
+    const building = buildings.find(b => b.name === selectedBuilding);
+    if (!building) {
+        console.log('Building not found in buildings array');
+        console.log('Available buildings:', buildings.map(b => b.name));
+        return;
+    }
+    
+    console.log('Loading floors for building:', building);
+    
     try {
+        const data = await makeAPIRequest(`/floors/${building.id}`);
+        const floors = data.floors;
+        console.log('Floors loaded:', floors);
+        
+        // Sort floors: Ground Floor first, then 1-27, then Background Floor
+        const sortedFloors = floors.sort((a, b) => {
+            if (a.label === 'Ground Floor') return -1;
+            if (b.label === 'Ground Floor') return 1;
+            if (a.label === 'Background Floor') return 1;
+            if (b.label === 'Background Floor') return -1;
+            
+            // For numeric floors, sort numerically
+            const aNum = parseInt(a.label);
+            const bNum = parseInt(b.label);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return aNum - bNum;
+            }
+            
+            return a.label.localeCompare(b.label);
+        });
+        
+        console.log('Sorted floors:', sortedFloors.map(f => f.label));
+        
+        // Populate floor dropdown
+        floorSelect.innerHTML = '<option value="">Select floor</option>';
+        sortedFloors.forEach(floor => {
+            const option = document.createElement('option');
+            option.value = floor.label;
+            option.textContent = floor.label;
+            floorSelect.appendChild(option);
+        });
+        
+        console.log('Floor dropdown populated with', sortedFloors.length, 'options');
+        
+        // Also load departments for this building
+        console.log('Loading departments after floors...');
+        loadAllDepartments();
+    } catch (error) {
+        console.error('Error loading floors:', error);
+    }
+}
+
+// Load all departments
+async function loadAllDepartments() {
+    try {
+        console.log('Loading departments...');
         const data = await makeAPIRequest('/departments');
         departments = data.departments;
+        console.log('Departments loaded:', departments);
         
         // Populate department dropdown
         const departmentSelect = document.getElementById('department');
         if (departmentSelect) {
+            console.log('Found department select, populating...');
             departmentSelect.innerHTML = '<option value="">Select Department</option>';
             departments.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept.name;
-                option.textContent = `${dept.name} (${dept.building}, Floor ${dept.floor})`;
+                option.textContent = dept.name;
                 departmentSelect.appendChild(option);
             });
+            console.log('Department dropdown populated with', departments.length, 'options');
+        } else {
+            console.log('Department select element not found');
         }
     } catch (error) {
         console.error('Error loading departments:', error);
@@ -353,7 +451,7 @@ async function loadDepartmentsByBuilding(buildingName) {
             buildingDepts.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept.name;
-                option.textContent = `${dept.name} (Floor ${dept.floor})`;
+                option.textContent = dept.name;
                 departmentSelect.appendChild(option);
             });
         }
