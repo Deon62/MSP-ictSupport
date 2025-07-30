@@ -19,6 +19,9 @@ class SupportTicket(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     resolved_at = db.Column(db.DateTime)
     notes = db.Column(db.Text)
+    rating = db.Column(db.Integer)  # 1-5 star rating
+    rating_comment = db.Column(db.Text)  # Optional comment with rating
+    rated_at = db.Column(db.DateTime)  # When the rating was submitted
     
     # Relationships
     building = db.relationship('Building', backref='tickets')
@@ -45,6 +48,9 @@ class SupportTicket(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
             'notes': self.notes,
+            'rating': self.rating,
+            'rating_comment': self.rating_comment,
+            'rated_at': self.rated_at.isoformat() if self.rated_at else None,
             'notification': self._get_notification_message()
         }
     

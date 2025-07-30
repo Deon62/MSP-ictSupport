@@ -1,37 +1,27 @@
 import os
-import google.generativeai as genai
-import logging
 import re
+import logging
+import time
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class AIAgent:
     def __init__(self):
-        # Initialize Gemini API
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-            logger.warning("GEMINI_API_KEY not configured - AI will use fallback responses")
-            self.model = None
-            self.api_configured = False
-        else:
-            try:
-                genai.configure(api_key=api_key)
-                # Use gemini-1.5-flash for faster responses
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
-                self.api_configured = True
-                logger.info("AI Agent initialized successfully")
-            except Exception as e:
-                logger.error(f"Failed to initialize AI Agent: {str(e)}")
-                self.model = None
-                self.api_configured = False
+        # Initialize API keys
+        self.deepseek_key = os.getenv('DEEPSEEK_API_KEY')
+        self.openai_key = os.getenv('OPENAI_API_KEY')
+        self.gemini_key = os.getenv('GEMINI_API_KEY')
         
-        # Simplified ICT Support prompt template
+        # Initialize clients
+        self.deepseek_client = None
+        self.openai_client = None
+        self.gemini_model = None
+        
+        # ICT Support prompt
         self.ict_prompt = """You are GPO, the ICT Support Assistant for Teleposta GPO (Ministry of Public Service).
 
 Personality: Warm, helpful, and professional. Keep responses concise and practical.
@@ -56,8 +46,8 @@ A: "Let's fix your WiFi connection:
 
 Q: "What's your name?"
 A: "Hi! I'm GPO, your friendly ICT helper. How can I assist you today?"""
-        
-        # Fallback responses for common issues when API is unavailable
+
+        # Fallback responses
         self.fallback_responses = {
             'wifi': "For WiFi issues, try these steps:\n1. Restart your device\n2. Forget and reconnect to 'Teleposta_Guest'\n3. Move closer to the access point\n4. Contact ICT team if issues persist",
             'printer': "For printer problems:\n1. Check if printer is powered on\n2. Ensure paper is loaded\n3. Restart the printer\n4. Contact ICT team for driver issues",
@@ -66,12 +56,80 @@ A: "Hi! I'm GPO, your friendly ICT helper. How can I assist you today?"""
             'email': "For email problems:\n1. Check your internet connection\n2. Clear browser cache and cookies\n3. Try a different browser\n4. Contact ICT team for account issues",
             'software': "For software issues:\n1. Restart the application\n2. Check for updates\n3. Restart your computer\n4. Contact ICT team for installation help"
         }
+        
+        # Initialize providers
+        self._init_providers()
+    
+    def _init_providers(self):
+        """Initialize AI providers in order of preference"""
+        
+        # 1. DeepSeek (Primary)
+        if self.deepseek_key:
+            try:
+                from openai import OpenAI
+                self.deepseek_client = OpenAI(
+                    api_key=self.deepseek_key,
+                    base_url="https://api.deepseek.com/v1"
+                )
+                logger.info("DeepSeek client initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize DeepSeek: {e}")
+                self.deepseek_client = None
+        
+        # 2. OpenAI (Secondary - using free model)
+        if self.openai_key:
+            try:
+                from openai import OpenAI
+                self.openai_client = OpenAI(api_key=self.openai_key)
+                logger.info("OpenAI client initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize OpenAI: {e}")
+                self.openai_client = None
+        
+        # 3. Gemini (Tertiary)
+        if self.gemini_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=self.gemini_key)
+                self.gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+                logger.info("Gemini client initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Gemini: {e}")
+                self.gemini_model = None
+        
+        # Log available providers
+        available_providers = []
+        if self.deepseek_client: available_providers.append("DeepSeek")
+        if self.openai_client: available_providers.append("OpenAI")
+        if self.gemini_model: available_providers.append("Gemini")
+        
+        if available_providers:
+            logger.info(f"Available AI providers: {', '.join(available_providers)}")
+        else:
+            logger.warning("No AI providers available - will use fallback responses")
+    
+    def clean_response(self, text):
+        """Clean response text by removing markdown formatting"""
+        if not text:
+            return text
+        
+        # Remove markdown formatting
+        text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Remove **bold**
+        text = re.sub(r'\*(.*?)\*', r'\1', text)      # Remove *italic*
+        text = re.sub(r'`(.*?)`', r'\1', text)        # Remove `code`
+        text = re.sub(r'#+\s*', '', text)             # Remove headers
+        text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)  # Remove links
+        
+        # Clean up whitespace
+        text = re.sub(r'\n\s*\n', '\n\n', text)
+        text = text.strip()
+        
+        return text
     
     def get_fallback_response(self, user_message):
-        """Get a fallback response when API is unavailable"""
+        """Get a fallback response based on keywords"""
         message_lower = user_message.lower()
         
-        # Check for keywords to provide relevant fallback
         if any(word in message_lower for word in ['wifi', 'internet', 'connection', 'network']):
             return self.fallback_responses['wifi']
         elif any(word in message_lower for word in ['printer', 'print', 'printing']):
@@ -89,66 +147,122 @@ A: "Hi! I'm GPO, your friendly ICT helper. How can I assist you today?"""
         else:
             return "I'm here to help with your ICT issues! Please provide more details about your problem, or contact the ICT team directly for immediate assistance."
     
-    def clean_response(self, text):
-        """Clean response text by removing markdown formatting and extra whitespace"""
-        if not text:
-            return text
-        
-        # Remove markdown formattin
-        text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Remove **bold**
-        text = re.sub(r'\*(.*?)\*', r'\1', text)      # Remove *italic*
-        text = re.sub(r'`(.*?)`', r'\1', text)        # Remove `code`
-        text = re.sub(r'#+\s*', '', text)             # Remove headers
-        text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)  # Remove links
-        
-        # Clean up whitespace
-        text = re.sub(r'\n\s*\n', '\n\n', text)  # Remove extra line breaks
-        text = text.strip()
-        
-        return text
-    
-    def get_response(self, user_message):
-        """Get AI response for user message - always returns a response"""
-        if not self.api_configured:
-            # Use fallback response when API is not configured
-            logger.info("Using fallback response - API not configured")
-            return self.get_fallback_response(user_message)
+    def _try_deepseek(self, user_message):
+        """Try DeepSeek API"""
+        if not self.deepseek_client:
+            return None
         
         try:
-            # Create a concise prompt for faster responses
-            prompt = f"{self.ict_prompt}\n\nUser: {user_message}\n\nGPO:"
-            
-            logger.info(f"Generating response for user message: {user_message[:50]}...")
-            
-            # Set generation config for faster responses
-            generation_config = {
-                'temperature': 0.7,
-                'top_p': 0.8,
-                'top_k': 40,
-                'max_output_tokens': 300,  # Limit response length
-            }
-            
-            response = self.model.generate_content(
-                prompt,
-                generation_config=generation_config
+            start_time = time.time()
+            response = self.deepseek_client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[
+                    {"role": "system", "content": self.ict_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                temperature=0.7,
+                max_tokens=300,
+                timeout=15
             )
             
-            if response and response.text:
-                # Clean the response to remove markdown formatting
-                cleaned_response = self.clean_response(response.text)
-                logger.info("AI response generated successfully")
-                return cleaned_response
-            else:
-                logger.warning("Empty response from AI model, using fallback")
-                return self.get_fallback_response(user_message)
+            if time.time() - start_time > 15:
+                logger.warning("DeepSeek request timed out")
+                return None
+            
+            content = response.choices[0].message.content
+            if content:
+                logger.info("DeepSeek response successful")
+                return self.clean_response(content)
             
         except Exception as e:
-            error_msg = str(e)
-            logger.error(f"AI response error: {error_msg}")
+            logger.warning(f"DeepSeek failed: {str(e)}")
+        
+        return None
+    
+    def _try_openai(self, user_message):
+        """Try OpenAI API (using free model)"""
+        if not self.openai_client:
+            return None
+        
+        try:
+            start_time = time.time()
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o-mini",  # Free model
+                messages=[
+                    {"role": "system", "content": self.ict_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                temperature=0.7,
+                max_tokens=300,
+                timeout=15
+            )
             
-            # Always return a helpful response instead of error message
-            logger.info("Using fallback response due to API error")
-            return self.get_fallback_response(user_message)
+            if time.time() - start_time > 15:
+                logger.warning("OpenAI request timed out")
+                return None
+            
+            content = response.choices[0].message.content
+            if content:
+                logger.info("OpenAI response successful")
+                return self.clean_response(content)
+            
+        except Exception as e:
+            logger.warning(f"OpenAI failed: {str(e)}")
+        
+        return None
+    
+    def _try_gemini(self, user_message):
+        """Try Gemini API"""
+        if not self.gemini_model:
+            return None
+        
+        try:
+            start_time = time.time()
+            response = self.gemini_model.generate_content(
+                f"{self.ict_prompt}\n\nUser: {user_message}\n\nGPO:",
+                generation_config={
+                    'temperature': 0.7,
+                    'top_p': 0.8,
+                    'top_k': 40,
+                    'max_output_tokens': 300,
+                }
+            )
+            
+            if time.time() - start_time > 15:
+                logger.warning("Gemini request timed out")
+                return None
+            
+            if response and response.text:
+                logger.info("Gemini response successful")
+                return self.clean_response(response.text)
+            
+        except Exception as e:
+            logger.warning(f"Gemini failed: {str(e)}")
+        
+        return None
+    
+    def get_response(self, user_message):
+        """Get AI response with fallback chain"""
+        logger.info(f"Processing user message: {user_message[:50]}...")
+        
+        # Try DeepSeek first (Primary)
+        response = self._try_deepseek(user_message)
+        if response:
+            return response
+        
+        # Try OpenAI second (Secondary)
+        response = self._try_openai(user_message)
+        if response:
+            return response
+        
+        # Try Gemini third (Tertiary)
+        response = self._try_gemini(user_message)
+        if response:
+            return response
+        
+        # Use fallback response
+        logger.info("All AI providers failed, using fallback response")
+        return self.get_fallback_response(user_message)
     
     def get_quick_fixes(self, issue_type):
         """Get quick fixes for common issues"""

@@ -81,6 +81,7 @@ function updateUserInterface() {
     const userNameSpan = document.querySelector('.user-name');
     const loginStatus = document.getElementById('login-status');
     const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
     
     if (isLoggedIn && currentUser) {
         // Hide login, show features
@@ -90,6 +91,9 @@ function updateUserInterface() {
         // Update user profile
         if (userNameSpan) userNameSpan.textContent = currentUser.name;
         if (userIdSpan) userIdSpan.textContent = currentUser.id;
+        
+        // Show logout button in profile
+        if (logoutBtn) logoutBtn.style.display = 'block';
         
         // Update login status
         if (loginStatus) {
@@ -118,6 +122,9 @@ function updateUserInterface() {
         // Reset user profile
         if (userNameSpan) userNameSpan.textContent = 'Guest User';
         if (userIdSpan) userIdSpan.textContent = 'Not logged in';
+        
+        // Hide logout button in profile
+        if (logoutBtn) logoutBtn.style.display = 'none';
         
         // Reset login status
         if (loginStatus) {
@@ -323,7 +330,7 @@ async function makeAPIRequest(endpoint, options = {}) {
     // Add timeout for AI requests to handle slow responses
     const isAIRequest = endpoint.includes('/ai/');
     if (isAIRequest) {
-        config.signal = AbortSignal.timeout(30000); // 30 second timeout for AI requests
+        config.signal = AbortSignal.timeout(15000); // 15 second timeout for AI requests
     }
     
     try {
@@ -662,7 +669,20 @@ function displayTickets(ticketsToShow) {
                 <button class="btn btn-sm btn-danger" onclick="deleteTicket(${ticket.id})">
                     <i class="fas fa-trash"></i> Delete
                 </button>
+                ${(ticket.status === 'closed' || ticket.status === 'resolved') ? `
+                    <button class="btn btn-sm rating-btn" onclick="openRatingModal(${ticket.id})" style="background-color: #FFC000; color: white; border: none;">
+                        <i class="fas fa-star"></i> Rate Service
+                    </button>
+                ` : ''}
             </div>
+            ${(ticket.status === 'closed' || ticket.status === 'resolved') && ticket.rating ? `
+                <div class="ticket-rating" style="text-align: right; margin-top: 10px;">
+                    <span style="color: #FFC000;">
+                        ${'★'.repeat(ticket.rating)}${'☆'.repeat(5-ticket.rating)}
+                    </span>
+                    ${ticket.rating_comment ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">"${ticket.rating_comment}"</div>` : ''}
+                </div>
+            ` : ''}
         </div>
     `).join('');
 }
@@ -843,11 +863,11 @@ async function sendMessage() {
         
         console.error('Error sending message:', error);
         
-        let errorMessage = 'Sorry, I encountered an error. Please try again.';
+        let errorMessage = 'I\'m here to help! Please try asking your question again.';
         if (error.name === 'TimeoutError') {
-            errorMessage = 'The AI is taking longer than expected. Please try again in a moment.';
+            errorMessage = 'I\'m a bit busy right now, but I can still help! Please try asking your question again.';
         } else if (error.message.includes('429')) {
-            errorMessage = 'Too many requests. Please wait a moment before trying again.';
+            errorMessage = 'I\'m getting a lot of requests right now. Please try again in a moment.';
         }
         
         addMessageToChat(errorMessage, 'ai');
@@ -1101,4 +1121,128 @@ document.addEventListener('click', function(event) {
     if (event.target === modal) {
         closeTicketModal();
     }
+    
+    const ratingModal = document.getElementById('rating-modal');
+    if (event.target === ratingModal) {
+        closeRatingModal();
+    }
 });
+
+// Rating functionality
+let currentRating = 0;
+let currentRatingTicketId = null;
+
+function openRatingModal(ticketId) {
+    currentRatingTicketId = ticketId;
+    currentRating = 0;
+    
+    // Reset stars
+    document.querySelectorAll('.star').forEach(star => {
+        star.textContent = '☆';
+        star.classList.remove('active');
+    });
+    
+    // Reset text and comment
+    document.getElementById('rating-text').textContent = 'Select a rating';
+    document.getElementById('rating-comment').value = '';
+    document.getElementById('submit-rating-btn').disabled = true;
+    
+    // Show modal
+    document.getElementById('rating-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Add star click listeners
+    setupStarListeners();
+}
+
+function setupStarListeners() {
+    const stars = document.querySelectorAll('.star');
+    
+    stars.forEach((star, index) => {
+        star.onclick = function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            currentRating = rating;
+            
+            // Update stars
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.textContent = '★';
+                    s.classList.add('active');
+                } else {
+                    s.textContent = '☆';
+                    s.classList.remove('active');
+                }
+            });
+            
+            // Update text
+            const ratingTexts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+            document.getElementById('rating-text').textContent = ratingTexts[rating];
+            
+            // Enable submit button
+            document.getElementById('submit-rating-btn').disabled = false;
+        };
+        
+        star.onmouseenter = function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.textContent = '★';
+                    s.style.color = '#FFC000';
+                } else {
+                    s.textContent = '☆';
+                    s.style.color = '#ddd';
+                }
+            });
+        };
+        
+        star.onmouseleave = function() {
+            stars.forEach((s, i) => {
+                if (i < currentRating) {
+                    s.textContent = '★';
+                    s.style.color = '#FFC000';
+                } else {
+                    s.textContent = '☆';
+                    s.style.color = '#ddd';
+                }
+            });
+        };
+    });
+}
+
+function closeRatingModal() {
+    document.getElementById('rating-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentRatingTicketId = null;
+    currentRating = 0;
+}
+
+async function submitRating() {
+    if (!currentRating || !currentRatingTicketId) {
+        showNotification('Please select a rating', 'error');
+        return;
+    }
+    
+    const comment = document.getElementById('rating-comment').value.trim();
+    
+    try {
+        const response = await makeAPIRequest(`/tickets/${currentRatingTicketId}/rate`, {
+            method: 'POST',
+            body: JSON.stringify({
+                rating: currentRating,
+                comment: comment
+            })
+        });
+        
+        showNotification('Rating submitted successfully!', 'success');
+        closeRatingModal();
+        
+        // Refresh tickets to show the rating
+        await loadTickets();
+        await loadDashboard();
+        
+    } catch (error) {
+        console.error('Error submitting rating:', error);
+        showNotification('Failed to submit rating. Please try again.', 'error');
+    }
+}

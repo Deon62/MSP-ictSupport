@@ -105,6 +105,58 @@ class Floor(db.Model):
             'description': self.description
         }
 
+class SupportTicket(db.Model):
+    __tablename__ = 'support_tickets'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    building_id = db.Column(db.Integer, db.ForeignKey('buildings.id'), nullable=False)
+    floor_id = db.Column(db.Integer, db.ForeignKey('floors.id'), nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    issue_type = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    contact_person = db.Column(db.String(100))
+    phone_number = db.Column(db.String(20))
+    priority = db.Column(db.String(20), default='medium')  # low, medium, high, urgent
+    status = db.Column(db.String(20), default='pending')  # pending, in_progress, resolved, closed
+    assigned_to = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    resolved_at = db.Column(db.DateTime)
+    notes = db.Column(db.Text)
+    rating = db.Column(db.Integer)  # 1-5 star rating
+    rating_comment = db.Column(db.Text)  # Optional comment with rating
+    rated_at = db.Column(db.DateTime)  # When the rating was submitted
+    
+    # Relationships
+    building = db.relationship('Building', backref='tickets')
+    floor = db.relationship('Floor', backref='tickets')
+    department = db.relationship('Department', backref='tickets')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'building_id': self.building_id,
+            'building_name': self.building.name if self.building else None,
+            'floor_id': self.floor_id,
+            'floor_label': self.floor.label if self.floor else None,
+            'department_id': self.department_id,
+            'department_name': self.department.name if self.department else None,
+            'issue_type': self.issue_type,
+            'description': self.description,
+            'contact_person': self.contact_person,
+            'phone_number': self.phone_number,
+            'priority': self.priority,
+            'status': self.status,
+            'assigned_to': self.assigned_to,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
+            'notes': self.notes,
+            'rating': self.rating,
+            'rating_comment': self.rating_comment,
+            'rated_at': self.rated_at.isoformat() if self.rated_at else None
+        }
+
 def reset_database():
     """Reset the database completely"""
     print("🗑️  Resetting database...")

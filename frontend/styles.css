@@ -158,6 +158,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    justify-content: space-between;
 }
 
 .user-avatar {
@@ -170,6 +171,13 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 16px;
+}
+
+.user-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
 }
 
 .user-info {
@@ -2210,4 +2218,143 @@ body {
     .kpi-label {
         font-size: 0.7rem;
     }
+}
+
+/* Rating Modal Styles */
+.rating-container {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.rating-container p {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.star {
+    font-size: 32px;
+    color: #ddd;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.star:hover,
+.star.active {
+    color: #FFC000;
+    transform: scale(1.1);
+}
+
+.star:hover ~ .star {
+    color: #ddd;
+}
+
+.rating-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    min-height: 20px;
+}
+
+.comment-section {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.comment-section label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+#rating-comment {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+#rating-comment:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.rating-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.rating-actions .btn {
+    min-width: 120px;
+}
+
+/* Rating button in ticket cards */
+.rating-btn {
+    background-color: #FFC000 !important;
+    color: white !important;
+    border: none !important;
+    transition: all 0.2s ease;
+}
+
+.rating-btn:hover {
+    background-color: #E6A800 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 192, 0, 0.3);
+}
+
+/* Ticket rating display */
+.ticket-rating {
+    text-align: right;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 192, 0, 0.1);
+    border-radius: var(--radius-md);
+    border-left: 3px solid #FFC000;
+}
+
+.ticket-rating span {
+    font-size: 16px;
+    color: #FFC000;
+    letter-spacing: 2px;
+}
+
+/* Logout button styles */
+.logout-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    margin-left: auto;
+}
+
+.logout-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.logout-btn i {
+    font-size: 14px;
 } 

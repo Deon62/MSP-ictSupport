@@ -274,4 +274,40 @@ def delete_ticket(ticket_id):
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@tickets_bp.route('/tickets/<int:ticket_id>/rate', methods=['POST'])
+def rate_ticket(ticket_id):
+    """Rate a ticket (for closed/resolved tickets only)"""
+    try:
+        ticket = SupportTicket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
+        # Only allow rating for closed or resolved tickets
+        if ticket.status not in ['closed', 'resolved']:
+            return jsonify({'error': 'Only closed or resolved tickets can be rated'}), 400
+        
+        data = request.get_json()
+        rating = data.get('rating')
+        comment = data.get('comment', '')
+        
+        if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+        
+        # Update ticket with rating
+        ticket.rating = rating
+        ticket.rating_comment = comment
+        ticket.rated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Rating submitted successfully',
+            'rating': rating,
+            'comment': comment
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500 
