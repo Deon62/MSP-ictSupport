@@ -1,6 +1,11 @@
 import os
 import google.generativeai as genai
 import logging
+import re
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -11,12 +16,13 @@ class AIAgent:
         # Initialize Gemini API
         api_key = os.getenv('GEMINI_API_KEY')
         if not api_key:
-            logger.warning("GEMINI_API_KEY not configured - AI features will be limited")
+            logger.warning("GEMINI_API_KEY not configured - AI will use fallback responses")
             self.model = None
             self.api_configured = False
         else:
             try:
                 genai.configure(api_key=api_key)
+                # Use gemini-1.5-flash for faster responses
                 self.model = genai.GenerativeModel('gemini-1.5-flash')
                 self.api_configured = True
                 logger.info("AI Agent initialized successfully")
@@ -25,90 +31,124 @@ class AIAgent:
                 self.model = None
                 self.api_configured = False
         
-        # Simple ICT Support prompt template
-        self.ict_prompt ="""
-            You are called GPO, the friendly ICT Support Assistant for **Teleposta GPO (Ministry of Public Service).
+        # Simplified ICT Support prompt template
+        self.ict_prompt = """You are GPO, the ICT Support Assistant for Teleposta GPO (Ministry of Public Service).
 
-            Personality & tone:
-            - Warm, polite, and empathetic. Add light humor when appropriate. Be helpful, never sarcastic.
+Personality: Warm, helpful, and professional. Keep responses concise and practical.
 
+Scope: WiFi, printers, projectors, computers, software, network, email, general IT support.
 
-            How to respond:
-            - Thank the user for reaching out and restate their goal in one short sentence.
-            - Provide clear, numbered steps with concise actions. Bold the most important actions.
-            - Ask one clarifying question if needed before giving a long set of steps.
-            - Keep responses practical and brief; avoid long paragraphs.
-            - Use at most one emoji per response (optional) to keep things professional and friendly.
+Guidelines:
+- Provide clear, numbered steps
+- If physical access needed, guide to create a support ticket
+- Keep responses under 150 words
+- Use simple language, avoid technical jargon
+- Be encouraging and solution-focused
 
-            Scope you cover:
-            - WiFi connectivity problems
-            - Printer setup & troubleshooting
-            - Projector/boardroom setup
-            - Computer hardware issues
-            - Software installation & updates
-            - Network connectivity issues
-            - Email configuration
-            - General IT support queries
+Example responses:
+Q: "WiFi keeps dropping"
+A: "Let's fix your WiFi connection:
+1. Toggle WiFi off/on and reconnect to 'Teleposta_Guest'
+2. Forget the network, then reconnect with credentials
+3. Restart your device
+4. Move closer to the access point if signal is weak
+5. If still having issues, I can help you create a support ticket."
 
-            Ticketing & escalation:
-            - If physical assistance or privileged access is required, politely guide the user to create a support ticket.
-            - Ask for: Issue, Location/Room, Device, Extension/Phone, Best time to visit**.
-            - Offer to fill the ticket for them if they provide details.
-
-            Safety & good practice:
-            - Encourage saving work before restarts/updates.
-            - Avoid sharing sensitive info; remind users not to post passwords.
-
-            Examples:
-
-            Q: "What's your name?"
-            A: "hey there I'm GPO your friendly ICT helper. How can I make your tech behave today? 😄"
-
-            Q: "My WiFi keeps dropping."
-            A: "Thanks for reaching out. Let's stabilize your connection:
-            1) Toggle WiFi off/on and reconnect to 'Teleposta_Guest'.
-            2) Forget the network, then reconnect and re‑enter credentials.
-            3) Restart the device to refresh the adapter.
-            4) If near a wall or far from the AP, move closer and test again.
-            5) Still flaky? I can open a ticket—share your location and extension."
-
-            Be consistently kind, concise, and action‑oriented. Sign off as GPO when it helps clarity.
-            """
+Q: "What's your name?"
+A: "Hi! I'm GPO, your friendly ICT helper. How can I assist you today?"""
+        
+        # Fallback responses for common issues when API is unavailable
+        self.fallback_responses = {
+            'wifi': "For WiFi issues, try these steps:\n1. Restart your device\n2. Forget and reconnect to 'Teleposta_Guest'\n3. Move closer to the access point\n4. Contact ICT team if issues persist",
+            'printer': "For printer problems:\n1. Check if printer is powered on\n2. Ensure paper is loaded\n3. Restart the printer\n4. Contact ICT team for driver issues",
+            'projector': "For projector setup:\n1. Connect VGA/HDMI cable to laptop\n2. Press Windows + P to extend display\n3. Check projector power and input source\n4. Contact ICT team for assistance",
+            'computer': "For computer issues:\n1. Restart the computer\n2. Check all cables are connected\n3. Try a different power outlet\n4. Contact ICT team for hardware issues",
+            'email': "For email problems:\n1. Check your internet connection\n2. Clear browser cache and cookies\n3. Try a different browser\n4. Contact ICT team for account issues",
+            'software': "For software issues:\n1. Restart the application\n2. Check for updates\n3. Restart your computer\n4. Contact ICT team for installation help"
+        }
+    
+    def get_fallback_response(self, user_message):
+        """Get a fallback response when API is unavailable"""
+        message_lower = user_message.lower()
+        
+        # Check for keywords to provide relevant fallback
+        if any(word in message_lower for word in ['wifi', 'internet', 'connection', 'network']):
+            return self.fallback_responses['wifi']
+        elif any(word in message_lower for word in ['printer', 'print', 'printing']):
+            return self.fallback_responses['printer']
+        elif any(word in message_lower for word in ['projector', 'display', 'screen', 'presentation']):
+            return self.fallback_responses['projector']
+        elif any(word in message_lower for word in ['computer', 'pc', 'laptop', 'desktop']):
+            return self.fallback_responses['computer']
+        elif any(word in message_lower for word in ['email', 'mail', 'outlook']):
+            return self.fallback_responses['email']
+        elif any(word in message_lower for word in ['software', 'program', 'application', 'app']):
+            return self.fallback_responses['software']
+        elif any(word in message_lower for word in ['name', 'who are you', 'hello', 'hi']):
+            return "Hi! I'm GPO, your friendly ICT helper. How can I assist you today?"
+        else:
+            return "I'm here to help with your ICT issues! Please provide more details about your problem, or contact the ICT team directly for immediate assistance."
+    
+    def clean_response(self, text):
+        """Clean response text by removing markdown formatting and extra whitespace"""
+        if not text:
+            return text
+        
+        # Remove markdown formattin
+        text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Remove **bold**
+        text = re.sub(r'\*(.*?)\*', r'\1', text)      # Remove *italic*
+        text = re.sub(r'`(.*?)`', r'\1', text)        # Remove `code`
+        text = re.sub(r'#+\s*', '', text)             # Remove headers
+        text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)  # Remove links
+        
+        # Clean up whitespace
+        text = re.sub(r'\n\s*\n', '\n\n', text)  # Remove extra line breaks
+        text = text.strip()
+        
+        return text
     
     def get_response(self, user_message):
-        """Get AI response for user message with robust error handling"""
+        """Get AI response for user message - always returns a response"""
         if not self.api_configured:
-            return "I'm currently in offline mode. Please contact the ICT team directly for immediate assistance, or try again later when the AI service is available."
+            # Use fallback response when API is not configured
+            logger.info("Using fallback response - API not configured")
+            return self.get_fallback_response(user_message)
         
         try:
-            # Create a simple prompt for ICT support
-            prompt = f"{self.ict_prompt}\n\nUser Question: {user_message}\n\nPlease provide a helpful response:"
+            # Create a concise prompt for faster responses
+            prompt = f"{self.ict_prompt}\n\nUser: {user_message}\n\nGPO:"
             
             logger.info(f"Generating response for user message: {user_message[:50]}...")
-            response = self.model.generate_content(prompt)
+            
+            # Set generation config for faster responses
+            generation_config = {
+                'temperature': 0.7,
+                'top_p': 0.8,
+                'top_k': 40,
+                'max_output_tokens': 300,  # Limit response length
+            }
+            
+            response = self.model.generate_content(
+                prompt,
+                generation_config=generation_config
+            )
             
             if response and response.text:
+                # Clean the response to remove markdown formatting
+                cleaned_response = self.clean_response(response.text)
                 logger.info("AI response generated successfully")
-                return response.text
+                return cleaned_response
             else:
-                logger.warning("Empty response from AI model")
-                return "I apologize, but I received an empty response. Please try rephrasing your question."
+                logger.warning("Empty response from AI model, using fallback")
+                return self.get_fallback_response(user_message)
             
         except Exception as e:
             error_msg = str(e)
             logger.error(f"AI response error: {error_msg}")
             
-            # Provide user-friendly error messages based on error type
-            if 'PermissionDenied' in error_msg or 'InvalidArgument' in error_msg:
-                user_message = "I'm experiencing a configuration issue with the AI service. Please contact the ICT team for immediate assistance."
-            elif 'ResourceExhausted' in error_msg:
-                user_message = "I've hit the rate limit for AI requests. Please try again in a few minutes or contact the ICT team directly."
-            elif 'safety' in error_msg.lower():
-                user_message = "I couldn't complete your request due to safety filters. Please try rephrasing your question or contact the ICT team."
-            else:
-                user_message = "I encountered an error while processing your request. Please contact the ICT team directly for immediate assistance."
-            
-            return user_message
+            # Always return a helpful response instead of error message
+            logger.info("Using fallback response due to API error")
+            return self.get_fallback_response(user_message)
     
     def get_quick_fixes(self, issue_type):
         """Get quick fixes for common issues"""
@@ -140,4 +180,4 @@ class AIAgent:
             ]
         }
         
-        return quick_fixes.get(issue_type.lower(), ["Please contact the ICT team for assistance."]) 
+        return quick_fixes.get(issue_type.lower(), ["Please contact the ICT team for assistance."])

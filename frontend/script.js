@@ -237,7 +237,7 @@ function updateHomeKPIs(data) {
     }
     
     if (aiStatus) {
-        // Check AI health status
+        // Always show AI as online
         const aiValue = aiStatus.querySelector('.kpi-value');
         aiValue.textContent = 'Online';
         aiValue.style.color = '#10b981';
@@ -318,6 +318,12 @@ async function makeAPIRequest(endpoint, options = {}) {
     // Add user ID to requests if logged in
     if (currentUser && currentUser.id) {
         config.headers['X-User-ID'] = currentUser.id;
+    }
+    
+    // Add timeout for AI requests to handle slow responses
+    const isAIRequest = endpoint.includes('/ai/');
+    if (isAIRequest) {
+        config.signal = AbortSignal.timeout(30000); // 30 second timeout for AI requests
     }
     
     try {
@@ -802,18 +808,49 @@ async function sendMessage() {
     addMessageToChat(message, 'user');
     input.value = '';
     
+    // Show typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message ai-message typing';
+    typingDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <p>GPO is thinking...</p>
+        </div>
+    `;
+    document.getElementById('chat-messages').appendChild(typingDiv);
+    
+    // Scroll to bottom
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
     try {
         const response = await makeAPIRequest('/ai/chat', {
             method: 'POST',
             body: JSON.stringify({ message })
         });
         
+        // Remove typing indicator
+        typingDiv.remove();
+        
         // Add AI response to chat
         addMessageToChat(response.response, 'ai');
         
     } catch (error) {
+        // Remove typing indicator
+        typingDiv.remove();
+        
         console.error('Error sending message:', error);
-        addMessageToChat('Sorry, I encountered an error. Please try again.', 'ai');
+        
+        let errorMessage = 'Sorry, I encountered an error. Please try again.';
+        if (error.name === 'TimeoutError') {
+            errorMessage = 'The AI is taking longer than expected. Please try again in a moment.';
+        } else if (error.message.includes('429')) {
+            errorMessage = 'Too many requests. Please wait a moment before trying again.';
+        }
+        
+        addMessageToChat(errorMessage, 'ai');
     }
 }
 
