@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICT Support System - Government of Kenya</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Left Vertical Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <img src="assets/image.png" alt="Government Logo" class="logo-image">
+                <div class="logo-text">
+                    <h3>ICT Support</h3>
+                    <span>Government of Kenya</span>
+                </div>
+            </div>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="#home" class="sidebar-link active" data-section="home">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#dashboard" class="sidebar-link" data-section="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#ai-assistant" class="sidebar-link" data-section="ai-assistant">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </a>
+            <a href="#our-team" class="sidebar-link" data-section="our-team">
+                <i class="fas fa-users"></i>
+                <span>Our Team</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile" id="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">Guest User</span>
+                    <span class="user-id">ID: <span id="user-id">Not logged in</span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="main-content">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="home-container">
+                <div class="home-header">
+                    <h1>Welcome to ICT Support System</h1>
+                    <p>Government of Kenya - Teleposta GPO</p>
+                </div>
+
+                <div class="login-container" id="login-container">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h2>Government ICT Support</h2>
+                            <p>Secure access to our support system</p>
+                        </div>
+                        
+                        <div class="login-status" id="login-status">
+                            <div class="status-indicator offline"></div>
+                            <span>Not logged in</span>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" id="login-btn" onclick="handleLogin()">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login to Continue</span>
+                        </button>
+
+                        <div class="login-info">
+                            <p><i class="fas fa-info-circle"></i> One-click secure login</p>
+                            <p><i class="fas fa-shield-alt"></i> Government-grade security</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-grid" id="features-grid" style="display: none;">
+                    <div class="feature-card">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h3>Create Tickets</h3>
+                        <p>Report ICT issues quickly and efficiently</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Track Progress</h3>
+                        <p>Monitor your support requests in real-time</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Assistant</h3>
+                        <p>Get instant help and solutions</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Expert Team</h3>
+                        <p>Connect with our ICT professionals</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="section-header">
+                <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+                <p>Monitor your support tickets and system performance</p>
+            </div>
+            
+            <div class="dashboard-grid">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card" id="total-tickets">
+                        <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                        <div class="stat-content">
+                            <h3>0</h3>
+                            <p>Total Tickets</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" data-progress="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="pending-tickets">
+                        <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                        <div class="stat-content">
+                            <h3>0</h3>
+                            <p>Pending</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill pending" data-progress="0"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="in-progress-tickets">
+                        <div class="stat-icon progress"><i class="fas fa-tools"></i></div>
+                        <div class="stat-content">
+                            <h3>0</h3>
+                            <p>In Progress</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress" data-progress="0"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="resolved-tickets">
+                        <div class="stat-icon resolved"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-content">
+                            <h3>0</h3>
+                            <p>Resolved</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill resolved" data-progress="0"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div class="dashboard-main-grid">
+                    <!-- Recent Tickets -->
+                    <div class="dashboard-section recent-tickets-section">
+                        <h2><i class="fas fa-history"></i> Recent Activity</h2>
+                        <div class="tickets-list" id="recent-tickets">
+                            <div class="loading">Loading recent tickets...</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-sidebar">
+                        <div class="dashboard-section">
+                            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                            <div class="quick-actions">
+                                <button class="quick-btn" onclick="showSection('create-ticket')">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Create Ticket</span>
+                                </button>
+                                <button class="quick-btn" onclick="showSection('ai-assistant')">
+                                    <i class="fas fa-robot"></i>
+                                    <span>Ask AI</span>
+                                </button>
+                                <button class="quick-btn" onclick="refreshDashboard()">
+                                    <i class="fas fa-sync"></i>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div class="dashboard-section metrics-section">
+                            <h2><i class="fas fa-chart-pie"></i> Performance</h2>
+                            <div class="metrics-list">
+                                <div class="metric-item">
+                                    <div class="metric-label">Response Time</div>
+                                    <div class="metric-value">2.3h</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 15%
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Resolution Rate</div>
+                                    <div class="metric-value">94%</div>
+                                    <div class="metric-trend up">
+                                        <i class="fas fa-arrow-up"></i> 8%
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Satisfaction</div>
+                                    <div class="metric-value">4.8/5</div>
+                                    <div class="metric-trend stable">
+                                        <i class="fas fa-minus"></i> 0%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Create Ticket Section -->
+        <section id="create-ticket" class="section">
+            <div class="section-header">
+                <h1><i class="fas fa-plus-circle"></i> Create New Support Request</h1>
+                <p>Let us help you resolve your ICT issue quickly and efficiently</p>
+            </div>
+
+            <div class="form-container">
+                <div class="form-header">
+                    <h3><i class="fas fa-clipboard-list"></i> Request Details</h3>
+                    <p>Tell us about your issue so we can provide the best support possible</p>
+                </div>
+                
+                <form id="ticket-form" class="ticket-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="building"><i class="fas fa-building"></i> Where are you located? *</label>
+                            <select id="building" name="building" required onchange="loadDepartments()">
+                                <option value="">Choose your building</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="floor"><i class="fas fa-layer-group"></i> Which floor? *</label>
+                            <input type="text" id="floor" name="floor" placeholder="e.g., 15th floor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="department"><i class="fas fa-users"></i> Your Department *</label>
+                            <select id="department" name="department" required>
+                                <option value="">Select your department</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="issue-type"><i class="fas fa-exclamation-triangle"></i> What's the problem? *</label>
+                            <select id="issue-type" name="issue_type" required>
+                                <option value="">Tell us what's wrong</option>
+                                <option value="WiFi Connectivity">🌐 WiFi Connection Issues</option>
+                                <option value="Printer Issues">🖨️ Printer Problems</option>
+                                <option value="Projector Setup">📽️ Projector Setup</option>
+                                <option value="Computer Hardware">💻 Computer Hardware</option>
+                                <option value="Software Installation">📦 Software Installation</option>
+                                <option value="Email Issues">📧 Email Problems</option>
+                                <option value="Network Issues">🌍 Network Issues</option>
+                                <option value="Other">❓ Something Else</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="priority"><i class="fas fa-flag"></i> How urgent is this?</label>
+                            <select id="priority" name="priority">
+                                <option value="low">🟢 Low - Can wait a bit</option>
+                                <option value="medium" selected>🟡 Medium - Normal priority</option>
+                                <option value="high">🟠 High - Need it soon</option>
+                                <option value="urgent">🔴 Urgent - Critical issue</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-person"><i class="fas fa-user"></i> Your Name</label>
+                            <input type="text" id="contact-person" name="contact_person" placeholder="Who should we contact?">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone-number"><i class="fas fa-phone"></i> Contact Number</label>
+                            <input type="tel" id="phone-number" name="phone_number" placeholder="Your phone number">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="description"><i class="fas fa-comment-alt"></i> Tell us more about your issue *</label>
+                        <textarea id="description" name="description" rows="4" placeholder="Describe what's happening, when it started, and any error messages you're seeing..." required></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-undo"></i> Start Over
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- AI Assistant Section -->
+        <section id="ai-assistant" class="section">
+            <div class="section-header">
+                <h1><i class="fas fa-robot"></i> AI Assistant</h1>
+                <p>Get instant help and solutions for common ICT issues</p>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h3><i class="fas fa-comments"></i> Chat with AI Assistant</h3>
+                    <div class="chat-status">
+                        <div class="status-indicator online"></div>
+                        <span>Online</span>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message ai-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hello! I'm your ICT Support Assistant. How can I help you today? You can ask me about WiFi issues, printer problems, projector setup, or any other IT-related questions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Type your question here..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendMessage()" class="chat-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                <div class="quick-questions">
+                    <h3><i class="fas fa-lightbulb"></i> Quick Questions</h3>
+                    <div class="quick-questions-grid">
+                        <button class="quick-question" onclick="askQuestion('How do I connect to the WiFi?')">
+                            <i class="fas fa-wifi"></i> WiFi Connection
+                        </button>
+                        <button class="quick-question" onclick="askQuestion('My printer is not working')">
+                            <i class="fas fa-print"></i> Printer Issues
+                        </button>
+                        <button class="quick-question" onclick="askQuestion('How do I set up the projector?')">
+                            <i class="fas fa-tv"></i> Projector Setup
+                        </button>
+                        <button class="quick-question" onclick="askQuestion('My computer is slow')">
+                            <i class="fas fa-desktop"></i> Computer Issues
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Team Section -->
+        <section id="our-team" class="section">
+            <div class="section-header">
+                <h1><i class="fas fa-users"></i> Our Team</h1>
+                <p>Meet the dedicated ICT professionals supporting your needs</p>
+            </div>
+
+            <div class="team-container">
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>John Mwangi</h3>
+                            <span class="team-role">ICT Manager</span>
+                            <p>Oversees all ICT operations and strategic planning</p>
+                            <div class="team-contact">
+                                <span><i class="fas fa-envelope"></i> john.mwangi@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 700 123 456</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-cog"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Sarah Kamau</h3>
+                            <span class="team-role">Network Engineer</span>
+                            <p>Specializes in network infrastructure and connectivity</p>
+                            <div class="team-contact">
+                                <span><i class="fas fa-envelope"></i> sarah.kamau@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 700 123 457</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>David Ochieng</h3>
+                            <span class="team-role">Security Specialist</span>
+                            <p>Ensures system security and data protection</p>
+                            <div class="team-contact">
+                                <span><i class="fas fa-envelope"></i> david.ochieng@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 700 123 458</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-tools"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Grace Wanjiku</h3>
+                            <span class="team-role">Hardware Technician</span>
+                            <p>Handles computer hardware and printer issues</p>
+                            <div class="team-contact">
+                                <span><i class="fas fa-envelope"></i> grace.wanjiku@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 700 123 459</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Michael Kiprop</h3>
+                            <span class="team-role">Software Support</span>
+                            <p>Assists with software installation and configuration</p>
+                            <div class="team-contact">
+                                <span><i class="fas fa-envelope"></i> michael.kiprop@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 700 123 460</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-headset"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Alice Njeri</h3>
+                            <span class="team-role">Help Desk Coordinator</span>
+                            <p>Manages ticket assignments and customer support</p>
+                            <div class="team-contact">
+                                <span><i class="fas fa-envelope"></i> alice.njeri@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 700 123 461</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tickets Section (Hidden by default) -->
+        <section id="tickets" class="section" style="display: none;">
+            <div class="section-header">
+                <h1><i class="fas fa-ticket-alt"></i> Support Tickets</h1>
+                <p>Manage and track all your support requests in one place</p>
+            </div>
+
+            <!-- Enhanced Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label><i class="fas fa-filter"></i> Filter by Status</label>
+                    <select id="status-filter" onchange="filterTickets()">
+                        <option value="">All Status</option>
+                        <option value="pending">🟡 Pending</option>
+                        <option value="in_progress">🟠 In Progress</option>
+                        <option value="resolved">🟢 Resolved</option>
+                        <option value="closed">⚫ Closed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-building"></i> Filter by Building</label>
+                    <select id="building-filter" onchange="filterTickets()">
+                        <option value="">All Buildings</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-search"></i> Search Tickets</label>
+                    <input type="text" id="search-filter" placeholder="Search by issue type, description, or contact person..." onkeyup="filterTickets()">
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-sort"></i> Sort By</label>
+                    <select id="sort-filter" onchange="filterTickets()">
+                        <option value="newest">📅 Newest First</option>
+                        <option value="oldest">📅 Oldest First</option>
+                        <option value="priority">⚡ Priority</option>
+                        <option value="status">🏷️ Status</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="tickets-container">
+                <div class="tickets-header">
+                    <h3><i class="fas fa-list"></i> All Support Tickets</h3>
+                    <div class="tickets-count">
+                        <span id="tickets-count">0 tickets</span>
+                        <button class="btn btn-secondary btn-sm" onclick="refreshTickets()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="tickets-list" id="all-tickets">
+                    <div class="loading">Loading tickets...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Ticket Details Modal -->
+    <div id="ticket-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-ticket-alt"></i> Ticket Details</h3>
+                <button class="modal-close" onclick="closeTicketModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Ticket details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTicketModal()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button class="btn btn-danger" id="delete-ticket-btn" onclick="deleteTicket()">
+                    <i class="fas fa-trash"></i> Delete Ticket
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Notification Toast -->
+    <div id="notification" class="notification">
+        <div class="notification-content">
+            <i class="notification-icon"></i>
+            <div class="notification-text">
+                <div class="notification-title"></div>
+                <span class="notification-message"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
