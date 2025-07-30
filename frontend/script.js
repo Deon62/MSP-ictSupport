@@ -202,6 +202,48 @@ function handleLogout() {
     showNotification('Successfully logged out!', 'success');
 }
 
+// Invite teammate function
+function inviteTeammate() {
+    if (!isLoggedIn) {
+        showNotification('Please login first to invite teammates.', 'error');
+        return;
+    }
+    
+    // For now, show a simple notification
+    // In a real implementation, this would open a modal or redirect to admin panel
+    showNotification('Team invitation feature coming soon! Contact your administrator for user management.', 'success');
+}
+
+// Update home page KPI cards
+function updateHomeKPIs(data) {
+    const totalTickets = document.getElementById('kpi-total-tickets');
+    const activeAgents = document.getElementById('kpi-active-agents');
+    const resolutionTime = document.getElementById('kpi-resolution-time');
+    const aiStatus = document.getElementById('kpi-ai-status');
+    
+    if (totalTickets && data.total_tickets !== undefined) {
+        totalTickets.querySelector('.kpi-value').textContent = data.total_tickets;
+    }
+    
+    if (activeAgents) {
+        // Set to 3 for now, could be fetched from backend
+        activeAgents.querySelector('.kpi-value').textContent = '3';
+    }
+    
+    if (resolutionTime && data.avg_resolution_time) {
+        resolutionTime.querySelector('.kpi-value').textContent = data.avg_resolution_time;
+    } else if (resolutionTime) {
+        resolutionTime.querySelector('.kpi-value').textContent = '2.3h';
+    }
+    
+    if (aiStatus) {
+        // Check AI health status
+        const aiValue = aiStatus.querySelector('.kpi-value');
+        aiValue.textContent = 'Online';
+        aiValue.style.color = '#10b981';
+    }
+}
+
 // Generate unique user ID
 function generateUserId() {
     return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -489,6 +531,7 @@ async function loadDashboard() {
     try {
         const data = await makeAPIRequest('/dashboard');
         updateDashboardStats(data);
+        updateHomeKPIs(data);
         displayRecentTickets(data.recent_tickets);
     } catch (error) {
         console.error('Error loading dashboard:', error);

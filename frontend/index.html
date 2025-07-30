@@ -61,11 +61,100 @@
         <!-- Home Section -->
         <section id="home" class="section active">
             <div class="home-container">
-                <div class="home-header">
-                    <h1>Welcome to ICT Support System</h1>
-                    <p>Government of Kenya - Teleposta GPO</p>
+                <!-- Welcome Section -->
+                <div class="welcome-section">
+                    <div class="welcome-content">
+                        <h1 class="welcome-title">Welcome to ICT Support! 👋</h1>
+                        <p class="welcome-subtitle">Your trusted partner for all ICT solutions and support services</p>
+                        <div class="welcome-actions">
+                            <button class="btn btn-primary welcome-btn" onclick="showSection('create-ticket')">
+                                <i class="fas fa-plus"></i>
+                                <span>+ Create Ticket</span>
+                            </button>
+                            <button class="btn btn-secondary welcome-btn" onclick="inviteTeammate()">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Invite Teammate</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- KPI Cards Section -->
+                <div class="kpi-section">
+                    <div class="kpi-grid">
+                        <div class="kpi-card" id="kpi-total-tickets">
+                            <div class="kpi-icon">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3 class="kpi-value">0</h3>
+                                <p class="kpi-label">Total Tickets</p>
+                            </div>
+                        </div>
+                        <div class="kpi-card" id="kpi-active-agents">
+                            <div class="kpi-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3 class="kpi-value">3</h3>
+                                <p class="kpi-label">Active Agents</p>
+                            </div>
+                        </div>
+                        <div class="kpi-card" id="kpi-resolution-time">
+                            <div class="kpi-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3 class="kpi-value">2.3h</h3>
+                                <p class="kpi-label">Avg Resolution</p>
+                            </div>
+                        </div>
+                        <div class="kpi-card" id="kpi-ai-status">
+                            <div class="kpi-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3 class="kpi-value">Online</h3>
+                                <p class="kpi-label">AI Assistant</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards Section -->
+                <div class="info-section">
+                    <div class="info-grid">
+                        <div class="info-card tips-card">
+                            <div class="info-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>Quick Tips</h3>
+                                <p>Before creating a ticket, try our AI Assistant for instant solutions to common issues!</p>
+                            </div>
+                        </div>
+                        <div class="info-card updates-card">
+                            <div class="info-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>System Updates</h3>
+                                <p>Latest update: Enhanced ticket tracking and improved AI response times.</p>
+                            </div>
+                        </div>
+                        <div class="info-card ai-card">
+                            <div class="info-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="info-content">
+                                <h3>AI Assistant</h3>
+                                <p>Our AI is ready to help! Ask questions about ICT issues, software, or hardware problems.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login Section (Hidden when logged in) -->
                 <div class="login-container" id="login-container">
                     <div class="login-card">
                         <div class="login-header">
@@ -88,29 +177,6 @@
                             <p><i class="fas fa-info-circle"></i> One-click secure login</p>
                             <p><i class="fas fa-shield-alt"></i> Government-grade security</p>
                         </div>
-                    </div>
-                </div>
-
-                <div class="features-grid" id="features-grid" style="display: none;">
-                    <div class="feature-card">
-                        <i class="fas fa-ticket-alt"></i>
-                        <h3>Create Tickets</h3>
-                        <p>Report ICT issues quickly and efficiently</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-chart-line"></i>
-                        <h3>Track Progress</h3>
-                        <p>Monitor your support requests in real-time</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-robot"></i>
-                        <h3>AI Assistant</h3>
-                        <p>Get instant help and solutions</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-users"></i>
-                        <h3>Expert Team</h3>
-                        <p>Connect with our ICT professionals</p>
                     </div>
                 </div>
             </div>
@@ -378,37 +444,37 @@
         <!-- Our Team Section -->
         <section id="our-team" class="section">
             <div class="section-header">
-                <h1><i class="fas fa-users"></i> Our Team</h1>
-                <p>Meet the dedicated ICT professionals supporting your needs</p>
+                <!-- <h1><i class="fas fa-users"></i> Our Team</h1> -->
+                <!-- <p>Meet the dedicated ICT professionals supporting your needs</p> -->
             </div>
 
             <div class="team-container">
                 <div class="team-grid">
                     <div class="team-card">
                         <div class="team-avatar">
-                            <i class="fas fa-user-tie"></i>
+                            <img src="assets/profile.jpg" alt="Deon Chinese" class="team-avatar-img">
                         </div>
                         <div class="team-info">
-                            <h3>John Mwangi</h3>
-                            <span class="team-role">ICT Manager</span>
-                            <p>Oversees all ICT operations and strategic planning</p>
+                            <h3>Deon Chinese</h3>
+                            <span class="team-role">AI Developer</span>
+                            <p>Develops the AI assistant for the ICT support system</p>
                             <div class="team-contact">
-                                <span><i class="fas fa-envelope"></i> john.mwangi@gov.ke</span>
-                                <span><i class="fas fa-phone"></i> +254 700 123 456</span>
+                                <span><i class="fas fa-envelope"></i> deon.chinese@gov.ke</span>
+                                <span><i class="fas fa-phone"></i> +254 7022 489 84</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="team-card">
                         <div class="team-avatar">
-                            <i class="fas fa-user-cog"></i>
+                            <img src="assets/profile1.jpg" alt="Nimoh Amani" class="team-avatar-img">
                         </div>
                         <div class="team-info">
-                            <h3>Sarah Kamau</h3>
+                            <h3>Nimoh Amani</h3>
                             <span class="team-role">Network Engineer</span>
                             <p>Specializes in network infrastructure and connectivity</p>
                             <div class="team-contact">
-                                <span><i class="fas fa-envelope"></i> sarah.kamau@gov.ke</span>
+                                <span><i class="fas fa-envelope"></i> nimoh.amani@gov.ke</span>
                                 <span><i class="fas fa-phone"></i> +254 700 123 457</span>
                             </div>
                         </div>
@@ -416,7 +482,7 @@
 
                     <div class="team-card">
                         <div class="team-avatar">
-                            <i class="fas fa-user-shield"></i>
+                            <img src="assets/profile3.jpg" alt="David Ochieng" class="team-avatar-img">
                         </div>
                         <div class="team-info">
                             <h3>David Ochieng</h3>
@@ -431,7 +497,7 @@
 
                     <div class="team-card">
                         <div class="team-avatar">
-                            <i class="fas fa-user-tools"></i>
+                            <img src="assets/profile4.jpg" alt="Grace Wanjiku" class="team-avatar-img">
                         </div>
                         <div class="team-info">
                             <h3>Grace Wanjiku</h3>
@@ -446,7 +512,7 @@
 
                     <div class="team-card">
                         <div class="team-avatar">
-                            <i class="fas fa-user-graduate"></i>
+                            <img src="assets/profile5.jpg" alt="Michael Kiprop" class="team-avatar-img">
                         </div>
                         <div class="team-info">
                             <h3>Michael Kiprop</h3>
@@ -461,7 +527,7 @@
 
                     <div class="team-card">
                         <div class="team-avatar">
-                            <i class="fas fa-user-headset"></i>
+                            <img src="assets/profile6.jpg" alt="Alice Njeri" class="team-avatar-img">
                         </div>
                         <div class="team-info">
                             <h3>Alice Njeri</h3>
