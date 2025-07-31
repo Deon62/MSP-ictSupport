@@ -871,10 +871,8 @@ async function sendMessage() {
             body: JSON.stringify({ message })
         });
         
-        // Remove typing indicator
         typingDiv.remove();
         
-        // Add AI response to chat
         addMessageToChat(response.response, 'ai');
         
     } catch (error) {
@@ -910,8 +908,6 @@ function addMessageToChat(message, sender) {
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(content);
     chatMessages.appendChild(messageDiv);
-    
-    // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -921,14 +917,13 @@ function askQuestion(question) {
     sendMessage();
 }
 
-// Enhanced notification system
 function showNotification(message, type = 'success', title = '') {
     const notification = document.getElementById('notification');
     const messageEl = notification.querySelector('.notification-message');
     const titleEl = notification.querySelector('.notification-title');
     const iconEl = notification.querySelector('.notification-icon');
     
-    // Set title and message
+
     if (title) {
         titleEl.textContent = title;
         titleEl.style.display = 'block';
@@ -937,7 +932,6 @@ function showNotification(message, type = 'success', title = '') {
     }
     messageEl.textContent = message;
     
-    // Set notification type and icon
     notification.className = `notification ${type}`;
     const icons = {
         success: '<i class="fas fa-check"></i>',
@@ -947,21 +941,18 @@ function showNotification(message, type = 'success', title = '') {
     };
     iconEl.innerHTML = icons[type] || icons.success;
     
-    // Show notification with animation
     notification.classList.add('show');
     
-    // Auto-hide after 5 seconds
     setTimeout(() => {
         notification.classList.remove('show');
     }, 5000);
     
-    // Add click to dismiss
     notification.onclick = () => {
         notification.classList.remove('show');
     };
 }
 
-// Refresh dashboard
+
 function refreshDashboard() {
     if (!isLoggedIn) {
         showNotification('Please login to view dashboard.', 'error');
@@ -971,7 +962,7 @@ function refreshDashboard() {
     showNotification('Dashboard refreshed!', 'success');
 }
 
-// Utility functions
+
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -982,13 +973,12 @@ function formatDate(dateString) {
     });
 }
 
-// Error handling
+
 window.addEventListener('error', function(event) {
     console.error('Global error:', event.error);
     showNotification('An error occurred. Please refresh the page.', 'error');
 });
 
-// Modal functions
 function openTicketModal(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) {
@@ -1111,12 +1101,10 @@ async function deleteTicket(ticketId) {
         
         showNotification('Ticket deleted successfully!', 'success');
         
-        // Close modal if open
         if (currentTicket && currentTicket.id === ticketId) {
             closeTicketModal();
         }
         
-        // Refresh tickets and dashboard
         await loadTickets();
         await loadDashboard();
         
@@ -1135,7 +1123,6 @@ function refreshTickets() {
     showNotification('Tickets refreshed!', 'success');
 }
 
-// Close modal when clicking outside
 document.addEventListener('click', function(event) {
     const modal = document.getElementById('ticket-modal');
     if (event.target === modal) {
@@ -1148,11 +1135,9 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Rating system variables
 let currentRatingTicketId = null;
 let currentRating = 0;
 
-// Show rating modal
 function showRatingModal(ticketId) {
     currentRatingTicketId = ticketId;
     currentRating = 0;
@@ -1262,7 +1247,6 @@ function setupStarListeners() {
     });
 }
 
-// Close rating modal
 function closeRatingModal() {
     const modal = document.getElementById('rating-modal');
     if (modal) {
@@ -1272,7 +1256,7 @@ function closeRatingModal() {
     currentRating = 0;
 }
 
-// Submit rating
+
 async function submitRating() {
     if (!currentRating || !currentRatingTicketId) {
         showNotification('Please select a rating', 'error');
@@ -1293,7 +1277,6 @@ async function submitRating() {
         showNotification('Rating submitted successfully!', 'success');
         closeRatingModal();
         
-        // Refresh tickets to show the rating
         await loadTickets();
         await loadDashboard();
         
@@ -1302,3 +1285,87 @@ async function submitRating() {
         showNotification('Failed to submit rating. Please try again.', 'error');
     }
 }
+
+function showEmergencyModal() {
+    const modal = document.getElementById('emergency-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        modal.querySelector('.modal-content').style.animation = 'modalSlideIn 0.3s ease';
+    }
+}
+
+function closeEmergencyModal() {
+    const modal = document.getElementById('emergency-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function callEmergency() {
+    window.open('tel:0702248984', '_self');
+    showNotification('Opening phone dialer...', 'info');
+}
+
+function emailEmergency() {
+    const subject = encodeURIComponent('URGENT: ICT Emergency Support Required');
+    const body = encodeURIComponent(`Dear ICT Support Team,\n\nThis is an emergency request for immediate assistance.\n\nIssue Description:\n\nLocation:\n\nContact Number:\n\nThank you.`);
+    window.open(`mailto:emergency@ict.go.ke?subject=${subject}&body=${body}`, '_self');
+    showNotification('Opening email client...', 'info');
+}
+
+function whatsappEmergency() {
+    // Open WhatsApp with emergency message
+    const message = encodeURIComponent('🚨 URGENT: ICT Emergency Support Required\n\nHello, I need immediate ICT support assistance. This is an emergency situation.\n\nPlease respond as soon as possible.\n\nThank you.');
+    const phoneNumber = '254702248984'; // WhatsApp format with country code
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+    showNotification('Opening WhatsApp...', 'info');
+}
+
+function chatEmergency() {
+    // Redirect to AI chat with emergency context
+    showSection('ai-assistant');
+    closeEmergencyModal();
+    
+    // Auto-fill emergency message
+    setTimeout(() => {
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.value = 'URGENT: I need immediate ICT support assistance. This is an emergency situation.';
+            sendMessage();
+        }
+    }, 500);
+    
+    showNotification('Redirecting to AI Assistant for emergency support...', 'info');
+}
+
+function createEmergencyTicket() {
+    // Create a high-priority emergency ticket
+    closeEmergencyModal();
+    showSection('create-ticket');
+    
+    // Auto-fill emergency ticket details
+    setTimeout(() => {
+        const issueTypeSelect = document.getElementById('issue_type');
+        const prioritySelect = document.getElementById('priority');
+        const descriptionTextarea = document.getElementById('description');
+        
+        if (issueTypeSelect) issueTypeSelect.value = 'Emergency';
+        if (prioritySelect) prioritySelect.value = 'urgent';
+        if (descriptionTextarea) {
+            descriptionTextarea.value = 'EMERGENCY: This is an urgent ICT support request requiring immediate attention.';
+        }
+        
+        showNotification('Emergency ticket form prepared. Please fill in the details.', 'warning');
+    }, 500);
+}
+
+// Close emergency modal when clicking outside
+document.addEventListener('click', function(event) {
+    const emergencyModal = document.getElementById('emergency-modal');
+    if (event.target === emergencyModal) {
+        closeEmergencyModal();
+    }
+});

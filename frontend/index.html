@@ -9,6 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Emergency Contact Button -->
+    <div class="emergency-button" id="emergency-button" onclick="showEmergencyModal()">
+        <div class="emergency-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <span class="emergency-text">Emergency</span>
+    </div>
+
     <!-- Left Vertical Navigation -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -637,6 +645,77 @@
             <div class="notification-text">
                 <div class="notification-title"></div>
                 <span class="notification-message"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Contact Modal -->
+    <div id="emergency-modal" class="modal">
+        <div class="modal-content emergency-modal-content">
+            <div class="modal-header emergency-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Emergency Contact</h3>
+                <button class="modal-close" onclick="closeEmergencyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="emergency-content">
+                    <div class="emergency-alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h4>Urgent ICT Support Required</h4>
+                        <p>For critical system issues, network problems, or security concerns, contact our emergency support team immediately.</p>
+                    </div>
+                    
+                    <div class="emergency-contacts">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-info">
+                                <h5>Emergency Hotline</h5>
+                                <p>0702248984</p>
+                                <button class="btn btn-danger" onclick="callEmergency()">
+                                    <i class="fas fa-phone"></i> Call Now
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-info">
+                                <h5>Emergency Email</h5>
+                                <p>emergency@ict.go.ke</p>
+                                <button class="btn btn-primary" onclick="emailEmergency()">
+                                    <i class="fas fa-envelope"></i> Send Email
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div class="contact-info">
+                                <h5>WhatsApp Support</h5>
+                                <p>0702248984</p>
+                                <button class="btn btn-success" onclick="whatsappEmergency()">
+                                    <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-actions">
+                        <button class="btn btn-secondary" onclick="createEmergencyTicket()">
+                            <i class="fas fa-ticket-alt"></i> Create Emergency Ticket
+                        </button>
+                        <button class="btn btn-warning" onclick="closeEmergencyModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
