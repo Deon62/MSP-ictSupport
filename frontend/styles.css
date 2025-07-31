@@ -157,8 +157,9 @@ body {
 .user-profile {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     justify-content: space-between;
+    width: 100%;
 }
 
 .user-avatar {
@@ -2347,7 +2348,6 @@ body {
     padding: 8px;
     border-radius: var(--radius-sm);
     transition: var(--transition);
-    margin-left: auto;
 }
 
 .logout-btn:hover {

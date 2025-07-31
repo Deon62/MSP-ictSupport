@@ -622,7 +622,11 @@ function displayTickets(ticketsToShow) {
         return;
     }
     
-    container.innerHTML = ticketsToShow.map(ticket => `
+    container.innerHTML = ticketsToShow.map(ticket => {
+        // Check if ticket is resolved or closed for rating
+        const isRatable = ticket.status === 'resolved' || ticket.status === 'closed';
+        
+        return `
         <div class="ticket-card" data-ticket-id="${ticket.id}">
             <div class="ticket-header">
                 <div class="ticket-info">
@@ -669,22 +673,22 @@ function displayTickets(ticketsToShow) {
                 <button class="btn btn-sm btn-danger" onclick="deleteTicket(${ticket.id})">
                     <i class="fas fa-trash"></i> Delete
                 </button>
-                ${(ticket.status === 'closed' || ticket.status === 'resolved') ? `
-                    <button class="btn btn-sm rating-btn" onclick="openRatingModal(${ticket.id})" style="background-color: #FFC000; color: white; border: none;">
+                ${isRatable ? `
+                    <button class="btn btn-sm btn-warning" onclick="showRatingModal(${ticket.id})" style="background-color: #FFC000; color: white; border: none;">
                         <i class="fas fa-star"></i> Rate Service
                     </button>
                 ` : ''}
             </div>
-            ${(ticket.status === 'closed' || ticket.status === 'resolved') && ticket.rating ? `
-                <div class="ticket-rating" style="text-align: right; margin-top: 10px;">
-                    <span style="color: #FFC000;">
+            ${isRatable && ticket.rating ? `
+                <div class="ticket-rating-display" style="text-align: right; margin-top: 10px; padding: 8px; background: rgba(255, 192, 0, 0.1); border-radius: 4px;">
+                    <span style="color: #FFC000; font-size: 16px;">
                         ${'★'.repeat(ticket.rating)}${'☆'.repeat(5-ticket.rating)}
                     </span>
                     ${ticket.rating_comment ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">"${ticket.rating_comment}"</div>` : ''}
                 </div>
             ` : ''}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Display recent tickets
@@ -697,7 +701,10 @@ function displayRecentTickets(recentTickets) {
         return;
     }
     
-    container.innerHTML = recentTickets.map(ticket => `
+    container.innerHTML = recentTickets.map(ticket => {
+        const isRatable = ticket.status === 'resolved' || ticket.status === 'closed';
+        
+        return `
         <div class="ticket-card">
             <div class="ticket-header">
                 <div class="ticket-title">${ticket.issue_type}</div>
@@ -720,9 +727,22 @@ function displayRecentTickets(recentTickets) {
                 <button class="btn btn-sm btn-danger" onclick="deleteTicket(${ticket.id})">
                     <i class="fas fa-trash"></i> Delete
                 </button>
+                ${isRatable ? `
+                    <button class="btn btn-sm btn-warning" onclick="showRatingModal(${ticket.id})" style="background-color: #FFC000; color: white; border: none;">
+                        <i class="fas fa-star"></i> Rate Service
+                    </button>
+                ` : ''}
             </div>
+            ${isRatable && ticket.rating ? `
+                <div class="ticket-rating-display" style="text-align: right; margin-top: 10px; padding: 8px; background: rgba(255, 192, 0, 0.1); border-radius: 4px;">
+                    <span style="color: #FFC000; font-size: 16px;">
+                        ${'★'.repeat(ticket.rating)}${'☆'.repeat(5-ticket.rating)}
+                    </span>
+                    ${ticket.rating_comment ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">"${ticket.rating_comment}"</div>` : ''}
+                </div>
+            ` : ''}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Handle ticket form submission
@@ -1128,38 +1148,70 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Rating functionality
-let currentRating = 0;
+// Rating system variables
 let currentRatingTicketId = null;
+let currentRating = 0;
 
-function openRatingModal(ticketId) {
+// Show rating modal
+function showRatingModal(ticketId) {
     currentRatingTicketId = ticketId;
     currentRating = 0;
     
-    // Reset stars
-    document.querySelectorAll('.star').forEach(star => {
-        star.textContent = '☆';
-        star.classList.remove('active');
-    });
+    // Create and show modal
+    const modalHTML = `
+        <div id="rating-modal" class="modal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+            <div class="modal-content" style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #333;">
+                        <i class="fas fa-star" style="color: #FFC000;"></i> Rate Our Service
+                    </h3>
+                    <button onclick="closeRatingModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">&times;</button>
+                </div>
+                
+                <p style="margin-bottom: 20px; color: #666;">How would you rate the service for this ticket?</p>
+                
+                <div class="stars-container" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                    <span class="star" data-rating="1" style="font-size: 30px; color: #ddd; cursor: pointer;">☆</span>
+                    <span class="star" data-rating="2" style="font-size: 30px; color: #ddd; cursor: pointer;">☆</span>
+                    <span class="star" data-rating="3" style="font-size: 30px; color: #ddd; cursor: pointer;">☆</span>
+                    <span class="star" data-rating="4" style="font-size: 30px; color: #ddd; cursor: pointer;">☆</span>
+                    <span class="star" data-rating="5" style="font-size: 30px; color: #ddd; cursor: pointer;">☆</span>
+                </div>
+                
+                <div id="rating-text" style="text-align: center; margin-bottom: 20px; color: #666; font-size: 14px;">Select a rating</div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">Additional Comments (Optional):</label>
+                    <textarea id="rating-comment" placeholder="Share your experience with our service..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 80px;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="closeRatingModal()" class="btn btn-secondary" style="padding: 10px 20px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button onclick="submitRating()" id="submit-rating-btn" disabled class="btn btn-primary" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; opacity: 0.5;">Submit Rating</button>
+                </div>
+            </div>
+        </div>
+    `;
     
-    // Reset text and comment
-    document.getElementById('rating-text').textContent = 'Select a rating';
-    document.getElementById('rating-comment').value = '';
-    document.getElementById('submit-rating-btn').disabled = true;
+    // Remove existing modal if any
+    const existingModal = document.getElementById('rating-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
-    // Show modal
-    document.getElementById('rating-modal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    // Add star click listeners
+    // Setup star listeners
     setupStarListeners();
 }
 
+// Setup star click listeners
 function setupStarListeners() {
     const stars = document.querySelectorAll('.star');
     
-    stars.forEach((star, index) => {
-        star.onclick = function() {
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
             const rating = parseInt(this.getAttribute('data-rating'));
             currentRating = rating;
             
@@ -1167,10 +1219,10 @@ function setupStarListeners() {
             stars.forEach((s, i) => {
                 if (i < rating) {
                     s.textContent = '★';
-                    s.classList.add('active');
+                    s.style.color = '#FFC000';
                 } else {
                     s.textContent = '☆';
-                    s.classList.remove('active');
+                    s.style.color = '#ddd';
                 }
             });
             
@@ -1180,11 +1232,11 @@ function setupStarListeners() {
             
             // Enable submit button
             document.getElementById('submit-rating-btn').disabled = false;
-        };
+            document.getElementById('submit-rating-btn').style.opacity = '1';
+        });
         
-        star.onmouseenter = function() {
+        star.addEventListener('mouseenter', function() {
             const rating = parseInt(this.getAttribute('data-rating'));
-            
             stars.forEach((s, i) => {
                 if (i < rating) {
                     s.textContent = '★';
@@ -1194,9 +1246,9 @@ function setupStarListeners() {
                     s.style.color = '#ddd';
                 }
             });
-        };
+        });
         
-        star.onmouseleave = function() {
+        star.addEventListener('mouseleave', function() {
             stars.forEach((s, i) => {
                 if (i < currentRating) {
                     s.textContent = '★';
@@ -1206,17 +1258,21 @@ function setupStarListeners() {
                     s.style.color = '#ddd';
                 }
             });
-        };
+        });
     });
 }
 
+// Close rating modal
 function closeRatingModal() {
-    document.getElementById('rating-modal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    const modal = document.getElementById('rating-modal');
+    if (modal) {
+        modal.remove();
+    }
     currentRatingTicketId = null;
     currentRating = 0;
 }
 
+// Submit rating
 async function submitRating() {
     if (!currentRating || !currentRatingTicketId) {
         showNotification('Please select a rating', 'error');
