@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
     checkUserSession();
+    initializeEnhancedForm();
 });
 
 // Initialize application
@@ -394,6 +395,12 @@ async function loadBuildings() {
         });
         
         console.log('Building dropdowns populated with', buildings.length, 'options');
+        
+        // Update enhanced form building dropdown if it exists
+        const buildingSelect = document.getElementById('building-select');
+        if (buildingSelect) {
+            createBuildingDropdown();
+        }
     } catch (error) {
         console.error('Error loading buildings:', error);
     }
@@ -1191,7 +1198,7 @@ function showRatingModal(ticketId) {
     setupStarListeners();
 }
 
-// Setup star click listeners
+
 function setupStarListeners() {
     const stars = document.querySelectorAll('.star');
     
@@ -1317,7 +1324,6 @@ function emailEmergency() {
 }
 
 function whatsappEmergency() {
-    // Open WhatsApp with emergency message
     const message = encodeURIComponent('🚨 URGENT: ICT Emergency Support Required\n\nHello, I need immediate ICT support assistance. This is an emergency situation.\n\nPlease respond as soon as possible.\n\nThank you.');
     const phoneNumber = '254702248984'; // WhatsApp format with country code
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
@@ -1325,11 +1331,9 @@ function whatsappEmergency() {
 }
 
 function chatEmergency() {
-    // Redirect to AI chat with emergency context
     showSection('ai-assistant');
     closeEmergencyModal();
     
-    // Auto-fill emergency message
     setTimeout(() => {
         const chatInput = document.getElementById('chat-input');
         if (chatInput) {
@@ -1342,11 +1346,9 @@ function chatEmergency() {
 }
 
 function createEmergencyTicket() {
-    // Create a high-priority emergency ticket
     closeEmergencyModal();
     showSection('create-ticket');
     
-    // Auto-fill emergency ticket details
     setTimeout(() => {
         const issueTypeSelect = document.getElementById('issue_type');
         const prioritySelect = document.getElementById('priority');
@@ -1362,10 +1364,363 @@ function createEmergencyTicket() {
     }, 500);
 }
 
-// Close emergency modal when clicking outside
+
 document.addEventListener('click', function(event) {
     const emergencyModal = document.getElementById('emergency-modal');
     if (event.target === emergencyModal) {
         closeEmergencyModal();
     }
 });
+
+// Enhanced Form Variables
+let currentFloor = 1;
+let totalFloors = 10;
+let selectedBuilding = null;
+let selectedUrgency = 'medium';
+
+// Initialize enhanced form components
+function initializeEnhancedForm() {
+    createFloorDial();
+    createBuildingDropdown();
+    setupUrgencyButtons();
+    setupEnhancedFormEventListeners();
+    
+    // Create building dropdown after data is loaded
+    if (buildings && buildings.length > 0) {
+        createBuildingDropdown();
+    } else {
+        // Wait for buildings to load
+        setTimeout(() => {
+            if (buildings && buildings.length > 0) {
+                createBuildingDropdown();
+            }
+        }, 1000);
+    }
+}
+
+// Create floor dial with ticks
+function createFloorDial() {
+    const floorDial = document.getElementById('floor-dial');
+    if (!floorDial) return;
+
+    // Clear existing ticks
+    const existingTicks = floorDial.querySelectorAll('.floor-tick');
+    existingTicks.forEach(tick => tick.remove());
+
+    // Initialize with default floors (will be updated when building is selected)
+    updateFloorDialWithFloors([]);
+    updateFloorDisplay();
+}
+
+// Update floor dial with actual floors from database
+function updateFloorDialWithFloors(floors) {
+    const floorDial = document.getElementById('floor-dial');
+    if (!floorDial) return;
+
+    // Clear existing ticks
+    const existingTicks = floorDial.querySelectorAll('.floor-tick');
+    existingTicks.forEach(tick => tick.remove());
+
+    if (floors.length === 0) {
+        // Show placeholder
+        const placeholder = document.createElement('div');
+        placeholder.className = 'floor-tick';
+        placeholder.style.transform = 'rotateZ(0deg)';
+        placeholder.setAttribute('data-floor', 'placeholder');
+        placeholder.style.opacity = '0.3';
+        floorDial.appendChild(placeholder);
+        return;
+    }
+
+    // Sort floors: Ground Floor first, then numeric floors, then Background Floor
+    const sortedFloors = floors.sort((a, b) => {
+        if (a.label === 'Ground Floor') return -1;
+        if (b.label === 'Ground Floor') return 1;
+        if (a.label === 'Background Floor') return 1;
+        if (b.label === 'Background Floor') return -1;
+        
+        // For numeric floors, sort numerically
+        const aNum = parseInt(a.label);
+        const bNum = parseInt(b.label);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return aNum - bNum;
+        }
+        
+        return a.label.localeCompare(b.label);
+    });
+
+    // Create ticks for each floor
+    sortedFloors.forEach((floor, index) => {
+        const tick = document.createElement('div');
+        tick.className = 'floor-tick';
+        tick.style.transform = `rotateZ(${index * (360 / sortedFloors.length)}deg)`;
+        tick.setAttribute('data-floor', floor.label);
+        tick.setAttribute('data-floor-id', floor.id);
+        floorDial.appendChild(tick);
+    });
+
+    // Update total floors count
+    totalFloors = sortedFloors.length;
+    currentFloor = 1;
+    updateFloorDisplay();
+}
+
+// Create building dropdown
+function createBuildingDropdown() {
+    const buildingSelect = document.getElementById('building-select');
+    const buildingPreview = document.getElementById('building-preview');
+    
+    if (!buildingSelect || !buildings || buildings.length === 0) {
+        if (buildingSelect) {
+            buildingSelect.innerHTML = '<option value="">Loading buildings...</option>';
+        }
+        return;
+    }
+    
+    // Clear existing options except the first one
+    buildingSelect.innerHTML = '<option value="">Choose a building...</option>';
+    
+    buildings.forEach(building => {
+        const option = document.createElement('option');
+        option.value = building.id;
+        option.textContent = building.name;
+        buildingSelect.appendChild(option);
+    });
+    
+    // Add event listener for building selection
+    buildingSelect.addEventListener('change', function() {
+        const selectedBuildingId = this.value;
+        const selectedBuilding = buildings.find(b => b.id == selectedBuildingId);
+        
+        if (selectedBuilding) {
+            selectBuilding(selectedBuilding);
+            buildingPreview.innerHTML = `
+                <i class="fas fa-building"></i>
+                <span>${selectedBuilding.name}</span>
+            `;
+            buildingPreview.classList.add('selected');
+        } else {
+            buildingPreview.innerHTML = `
+                <i class="fas fa-building"></i>
+                <span>No building selected</span>
+            `;
+            buildingPreview.classList.remove('selected');
+            // Clear floor dial when no building is selected
+            updateFloorDialWithFloors([]);
+            document.getElementById('floor-display').textContent = 'Select a building first';
+        }
+    });
+}
+
+// Setup urgency buttons
+function setupUrgencyButtons() {
+    const urgencyButtons = document.querySelectorAll('.urgency-btn');
+    urgencyButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectUrgency(btn);
+        });
+    });
+}
+
+// Setup enhanced form event listeners
+function setupEnhancedFormEventListeners() {
+    const enhancedForm = document.getElementById('enhanced-ticket-form');
+    if (enhancedForm) {
+        enhancedForm.addEventListener('submit', handleEnhancedTicketSubmission);
+    }
+}
+
+// Select building
+async function selectBuilding(building) {
+    selectedBuilding = building.id;
+    const buildingName = building.name;
+
+    // Load floors for the selected building
+    try {
+        const data = await makeAPIRequest(`/floors/${building.id}`);
+        const floors = data.floors;
+        updateFloorDialWithFloors(floors);
+        
+        // Load departments for this building
+        await loadDepartmentsByBuilding(buildingName);
+    } catch (error) {
+        console.error('Error loading floors for building:', error);
+        showNotification('Failed to load floors for this building', 'error');
+    }
+}
+
+// Select urgency
+function selectUrgency(button) {
+    // Remove previous selection
+    document.querySelectorAll('.urgency-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+
+    // Add selection to clicked button
+    button.classList.add('selected');
+    selectedUrgency = button.dataset.urgency;
+}
+
+// Rotate floor dial
+function rotateFloor(direction) {
+    const floorTicks = document.querySelectorAll('.floor-tick[data-floor]:not([data-floor="placeholder"])');
+    if (floorTicks.length === 0) return;
+
+    if (direction === 'left') {
+        currentFloor = currentFloor > 1 ? currentFloor - 1 : floorTicks.length;
+    } else {
+        currentFloor = currentFloor < floorTicks.length ? currentFloor + 1 : 1;
+    }
+
+    updateFloorDisplay();
+    updateFloorDial();
+}
+
+// Update floor display
+function updateFloorDisplay() {
+    const floorDisplay = document.getElementById('floor-display');
+    if (floorDisplay) {
+        const floorTicks = document.querySelectorAll('.floor-tick[data-floor]:not([data-floor="placeholder"])');
+        if (floorTicks.length > 0 && currentFloor <= floorTicks.length) {
+            const selectedFloor = floorTicks[currentFloor - 1];
+            const floorLabel = selectedFloor.dataset.floor;
+            floorDisplay.textContent = floorLabel;
+        } else {
+            floorDisplay.textContent = 'Select Building';
+        }
+    }
+}
+
+// Update floor dial visual
+function updateFloorDial() {
+    const floorDial = document.getElementById('floor-dial');
+    if (!floorDial) return;
+
+    // Update active tick
+    const ticks = floorDial.querySelectorAll('.floor-tick[data-floor]:not([data-floor="placeholder"])');
+    ticks.forEach((tick, index) => {
+        tick.classList.remove('active');
+        if (index === currentFloor - 1) {
+            tick.classList.add('active');
+        }
+    });
+
+    // Rotate dial
+    if (ticks.length > 0) {
+        const rotation = (currentFloor - 1) * (360 / ticks.length);
+        floorDial.style.transform = `rotateZ(${-rotation}deg)`;
+    }
+}
+
+// Handle enhanced ticket submission
+async function handleEnhancedTicketSubmission(event) {
+    event.preventDefault();
+    
+    if (!isLoggedIn) {
+        showNotification('Please login to create tickets.', 'error');
+        return;
+    }
+
+    const formData = new FormData(event.target);
+    
+    // Add selected values from interactive components
+    formData.append('floor', currentFloor.toString());
+    formData.append('building', selectedBuilding || '');
+    formData.append('priority', selectedUrgency);
+
+    // Get the selected floor label
+    const floorTicks = document.querySelectorAll('.floor-tick[data-floor]:not([data-floor="placeholder"])');
+    let selectedFloorLabel = '';
+    if (floorTicks.length > 0 && currentFloor <= floorTicks.length) {
+        const selectedFloor = floorTicks[currentFloor - 1];
+        selectedFloorLabel = selectedFloor.dataset.floor;
+    }
+
+    // Get the selected building name
+    const buildingSelect = document.getElementById('building-select');
+    const selectedBuildingName = buildingSelect ? buildingSelect.options[buildingSelect.selectedIndex]?.text : '';
+
+    const ticketData = {
+        building: selectedBuildingName,
+        floor: selectedFloorLabel,
+        department: formData.get('department'),
+        issue_type: formData.get('issue_type'),
+        description: formData.get('description'),
+        contact_person: formData.get('contact_person'),
+        phone_number: formData.get('phone_number'),
+        priority: selectedUrgency,
+        user_id: currentUser.id
+    };
+
+    // Validate required fields
+    if (!ticketData.building || !ticketData.department || !ticketData.issue_type || !ticketData.description) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Animate submit button
+    const submitBtn = document.getElementById('enhanced-submit-btn');
+    submitBtn.classList.add('flying');
+
+    try {
+        const response = await makeAPIRequest('/tickets', {
+            method: 'POST',
+            body: JSON.stringify(ticketData)
+        });
+
+        showNotification('Ticket created successfully!', 'success');
+        
+        // Reset form after animation
+        setTimeout(() => {
+            resetEnhancedForm();
+            submitBtn.classList.remove('flying');
+        }, 1500);
+        
+        // Reload data
+        await loadTickets();
+        await loadDashboard();
+        
+    } catch (error) {
+        console.error('Error creating ticket:', error);
+        showNotification('Failed to create ticket. Please try again.', 'error');
+        submitBtn.classList.remove('flying');
+    }
+}
+
+// Reset enhanced form
+function resetEnhancedForm() {
+    const form = document.getElementById('enhanced-ticket-form');
+    if (form) {
+        form.reset();
+    }
+    
+    // Reset interactive components
+    currentFloor = 1;
+    selectedBuilding = null;
+    selectedUrgency = 'medium';
+    
+    // Reset building selection
+    const buildingSelect = document.getElementById('building-select');
+    const buildingPreview = document.getElementById('building-preview');
+    if (buildingSelect) {
+        buildingSelect.value = '';
+    }
+    if (buildingPreview) {
+        buildingPreview.innerHTML = `
+            <i class="fas fa-building"></i>
+            <span>No building selected</span>
+        `;
+        buildingPreview.classList.remove('selected');
+    }
+    
+    // Reset urgency selection
+    document.querySelectorAll('.urgency-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    document.querySelector('[data-urgency="medium"]').classList.add('selected');
+    
+    // Reset floor dial to initial state
+    updateFloorDialWithFloors([]);
+    updateFloorDisplay();
+    updateFloorDial();
+}

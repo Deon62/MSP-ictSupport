@@ -157,8 +157,8 @@ body {
 .user-profile {
     display: flex;
     align-items: center;
-    gap: 8px;
     justify-content: space-between;
+    gap: 12px;
     width: 100%;
 }
 
@@ -1346,7 +1346,8 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    margin-bottom: 16px;
 }
 
 .form-group.full-width {
@@ -1354,13 +1355,15 @@ body {
 }
 
 .form-group label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #111827;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
+    gap: 6px;
+    margin-bottom: 4px;
+    text-align: center;
+    justify-content: center;
 }
 
 .form-group label i {
@@ -1372,10 +1375,10 @@ body {
 .form-group input,
 .form-group select,
 .form-group textarea {
-    padding: 14px 16px;
+    padding: 10px 14px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    font-size: 14px;
+    font-size: 13px;
     background: var(--secondary-bg);
     color: var(--text-primary);
     transition: var(--transition);
@@ -1401,15 +1404,15 @@ body {
 
 .form-group textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
 }
 
 .form-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: flex-end;
-    margin-top: 24px;
-    padding-top: 20px;
+    margin-top: 16px;
+    padding-top: 16px;
     border-top: 1px solid var(--border-color);
 }
 
@@ -2605,4 +2608,329 @@ body {
     .emergency-actions {
         flex-direction: column;
     }
+}
+
+/* Enhanced Form Styles */
+.enhanced-form-container {
+    background: var(--secondary-bg);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-form-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--accent-coral));
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.enhanced-form-header {
+    text-align: center;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(244, 63, 94, 0.05) 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.enhanced-form-header h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.enhanced-form-header h3 i {
+    color: var(--primary-blue);
+    font-size: 20px;
+}
+
+.enhanced-form-header p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.enhanced-ticket-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.enhanced-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+    .enhanced-form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* Floor Selector - Vault-style Rotating Dial */
+.floor-selector {
+    position: relative;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.floor-dial {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+    border: 3px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.floor-dial:hover {
+    transform: scale(1.05);
+}
+
+.floor-dial::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px dashed #D1D5DB;
+}
+
+.floor-tick {
+    position: absolute;
+    width: 3px;
+    height: 12px;
+    background: transparent;
+    border-radius: 2px;
+    transform-origin: 50% 40px;
+}
+
+.floor-tick.active {
+    background: transparent;
+    box-shadow: none;
+}
+
+.floor-indicator {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #2563EB;
+    border-radius: 50%;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(37, 99, 235, 0.8);
+    z-index: 1;
+}
+
+.floor-controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    position: relative;
+    z-index: 2;
+}
+
+.floor-btn {
+    padding: 4px 10px;
+    background: #2563EB;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.floor-btn:hover {
+    background: #1E40AF;
+    transform: translateY(-2px);
+}
+
+.floor-display {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+    margin-top: 6px;
+    text-align: center;
+}
+
+/* Building Selector - Dropdown with Preview */
+.building-dropdown-container {
+    position: relative;
+    margin-top: 8px;
+}
+
+.building-dropdown-container select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #FFFFFF;
+    color: #111827;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.building-dropdown-container select:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.building-dropdown-container select:hover {
+    border-color: #2563EB;
+}
+
+.building-preview {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #6B7280;
+    transition: all 0.3s ease;
+}
+
+.building-preview.selected {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    border-color: #2563EB;
+    color: #2563EB;
+}
+
+.building-preview i {
+    font-size: 14px;
+}
+
+
+
+/* Urgency Selector - Glowing Buttons */
+.urgency-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.urgency-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.urgency-btn:hover {
+    border-color: #2563EB;
+    color: #2563EB;
+    transform: translateY(-2px);
+}
+
+.urgency-btn.selected {
+    border-color: #2563EB;
+    background: #2563EB;
+    color: white;
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+    animation: pulse 2s infinite;
+}
+
+/* Enhanced Submit Button with Flying Animation */
+.enhanced-submit-btn {
+    width: 100%;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.enhanced-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+.enhanced-submit-btn:active {
+    transform: translateY(0);
+}
+
+.enhanced-submit-btn.flying {
+    animation: flyAway 1.5s ease-in-out forwards;
+}
+
+@keyframes flyAway {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-20px) rotate(10deg);
+    }
+    100% {
+        transform: translateX(100vw) translateY(-100px) rotate(45deg);
+    }
+}
+
+.paper-plane {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.enhanced-submit-btn.flying .paper-plane {
+    opacity: 1;
 } 

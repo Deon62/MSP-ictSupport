@@ -320,85 +320,123 @@
             </div>
         </section>
 
-        <!-- Create Ticket Section -->
+        <!-- Enhanced Create Ticket Section -->
         <section id="create-ticket" class="section">
             <div class="section-header">
-                <h1><i class="fas fa-plus-circle"></i> Create New Support Request</h1>
-                <p>Let us help you resolve your ICT issue quickly and efficiently</p>
+                <!-- <h1><i class="fas fa-plus-circle"></i> Create New Support Request</h1>
+                <p>Let us help you resolve your ICT issue quickly and efficiently</p> -->
             </div>
 
-            <div class="form-container">
-                <div class="form-header">
+            <div class="enhanced-form-container">
+                <div class="enhanced-form-header">
                     <h3><i class="fas fa-clipboard-list"></i> Request Details</h3>
                     <p>Tell us about your issue so we can provide the best support possible</p>
                 </div>
                 
-                <form id="ticket-form" class="ticket-form">
-                    <div class="form-grid">
+                <form id="enhanced-ticket-form" class="enhanced-ticket-form">
+                    <div class="enhanced-form-grid">
+                        <!-- Building Selector with Dropdown -->
                         <div class="form-group">
-                            <label for="building"><i class="fas fa-building"></i> Where are you located? *</label>
-                            <select id="building" name="building" required onchange="loadFloors()">
-                                <option value="">Choose your building</option>
-                            </select>
+                            <label>🏢 Select Building</label>
+                            <div class="building-dropdown-container">
+                                <select id="building-select" name="building" required>
+                                    <option value="">Choose a building...</option>
+                                </select>
+                                <div class="building-preview" id="building-preview">
+                                    <i class="fas fa-building"></i>
+                                    <span>No building selected</span>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Floor Selector with Rotating Dial -->
                         <div class="form-group">
-                            <label for="floor"><i class="fas fa-layer-group"></i> Which floor? *</label>
-                            <select id="floor" name="floor" required>
-                                <option value="">Select floor</option>
-                            </select>
+                            <label>🏗️ Select Floor</label>
+                            <div class="floor-selector">
+                                <div class="floor-dial" id="floor-dial">
+                                    <div class="floor-indicator"></div>
+                                    <!-- Floor ticks will be populated by JavaScript -->
+                                </div>
+                                <div class="floor-controls">
+                                    <button type="button" class="floor-btn" onclick="rotateFloor('left')">
+                                        <i class="fas fa-chevron-left"></i> Left
+                                    </button>
+                                    <button type="button" class="floor-btn" onclick="rotateFloor('right')">
+                                        Right <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <div class="floor-display" id="floor-display">Select a building first</div>
+                            </div>
                         </div>
+
+                        <!-- Department Dropdown -->
                         <div class="form-group">
-                            <label for="department"><i class="fas fa-users"></i> Your Department *</label>
+                            <label for="department">👥 Department</label>
                             <select id="department" name="department" required>
-                                <option value="">Select your department</option>
+                                <option value="">Select department</option>
+                                <option value="IT">Information Technology</option>
+                                <option value="HR">Human Resources</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Operations">Operations</option>
                             </select>
                         </div>
+
+                        <!-- Problem Type Dropdown -->
                         <div class="form-group">
-                            <label for="issue-type"><i class="fas fa-exclamation-triangle"></i> What's the problem? *</label>
+                            <label for="issue-type">🔧 Problem Type</label>
                             <select id="issue-type" name="issue_type" required>
-                                <option value="">Tell us what's wrong</option>
-                                <option value="WiFi Connectivity"> WiFi Connection Issues</option>
-                                <option value="Printer Issues"> Printer Problems</option>
-                                <option value="Projector Setup"> Projector Setup</option>
-                                <option value="Computer Hardware"> Computer Hardware</option>
-                                <option value="Software Installation"> Software Installation</option>
-                                <option value="Email Issues"> Email Problems</option>
-                                <option value="Network Issues"> Network Issues</option>
-                                <option value="Other"> Something Else</option>
+                                <option value="">Select problem type</option>
+                                <option value="WiFi Connectivity">WiFi Connection Issues</option>
+                                <option value="Printer Issues">Printer Problems</option>
+                                <option value="Projector Setup">Projector Setup</option>
+                                <option value="Computer Hardware">Computer Hardware</option>
+                                <option value="Software Installation">Software Installation</option>
+                                <option value="Email Issues">Email Problems</option>
+                                <option value="Network Issues">Network Issues</option>
+                                <option value="Other">Something Else</option>
                             </select>
                         </div>
+
+                        <!-- Urgency Selector with Glowing Buttons -->
                         <div class="form-group">
-                            <label for="priority"><i class="fas fa-flag"></i> How urgent is this?</label>
-                            <select id="priority" name="priority">
-                                <option value="low">🟢 Low - Can wait a bit</option>
-                                <option value="medium" selected>🟡 Medium - Normal priority</option>
-                                <option value="high">🟠 High - Need it soon</option>
-                                <option value="urgent">🔴 Urgent - Critical issue</option>
-                            </select>
+                            <label>🚨 Urgency Level</label>
+                            <div class="urgency-selector">
+                                <button type="button" class="urgency-btn" data-urgency="low">
+                                    🟢 Low
+                                </button>
+                                <button type="button" class="urgency-btn selected" data-urgency="medium">
+                                    🟡 Medium
+                                </button>
+                                <button type="button" class="urgency-btn" data-urgency="high">
+                                    🟠 High
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- Contact Information -->
                         <div class="form-group">
-                            <label for="contact-person"><i class="fas fa-user"></i> Your Name</label>
+                            <label for="contact-person">👤 Contact Person</label>
                             <input type="text" id="contact-person" name="contact_person" placeholder="Who should we contact?">
                         </div>
+
                         <div class="form-group">
-                            <label for="phone-number"><i class="fas fa-phone"></i> Contact Number</label>
+                            <label for="phone-number">📞 Phone Number</label>
                             <input type="tel" id="phone-number" name="phone_number" placeholder="Your phone number">
                         </div>
                     </div>
-                    
+
+                    <!-- Description -->
                     <div class="form-group full-width">
-                        <label for="description"><i class="fas fa-comment-alt"></i> Tell us more about your issue *</label>
+                        <label for="description">📝 Description</label>
                         <textarea id="description" name="description" rows="4" placeholder="Describe what's happening, when it started, and any error messages you're seeing..." required></textarea>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                            <i class="fas fa-undo"></i> Start Over
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Send Request
-                        </button>
-                    </div>
+                    <!-- Submit Button with Flying Animation -->
+                    <button type="submit" class="enhanced-submit-btn" id="enhanced-submit-btn">
+                        <span class="paper-plane">✈️</span>
+                        <span class="btn-text">Send Request</span>
+                    </button>
                 </form>
             </div>
         </section>

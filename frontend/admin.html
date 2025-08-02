@@ -13,8 +13,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #F9FAFB;
+            color: #111827;
         }
 
         .container {
@@ -65,7 +65,7 @@
         .main-content {
             flex: 1;
             padding: 20px;
-            background: white;
+            background: #FFFFFF;
         }
 
         .header {
@@ -78,7 +78,7 @@
         }
 
         .header h1 {
-            color: #2c3e50;
+            color: #111827;
             font-size: 2rem;
         }
 
@@ -104,6 +104,347 @@
             border: 1px solid #f5c6cb;
         }
 
+        /* Enhanced Ticket Creation Form */
+        .ticket-creation-section {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* Floor Selector - Vault-style Rotating Dial */
+        .floor-selector {
+            position: relative;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floor-dial {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            border: 3px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .floor-dial:hover {
+            transform: scale(1.05);
+        }
+
+        .floor-dial::before {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px dashed #D1D5DB;
+        }
+
+        .floor-tick {
+            position: absolute;
+            width: 4px;
+            height: 20px;
+            background: #6B7280;
+            border-radius: 2px;
+            transform-origin: 50% 60px;
+        }
+
+        .floor-tick.active {
+            background: #2563EB;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+        }
+
+        .floor-indicator {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #2563EB;
+            border-radius: 50%;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.8);
+        }
+
+        .floor-controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .floor-btn {
+            padding: 8px 16px;
+            background: #2563EB;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .floor-btn:hover {
+            background: #1E40AF;
+            transform: translateY(-2px);
+        }
+
+        .floor-display {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #111827;
+            margin-top: 10px;
+        }
+
+        /* Building Selector - Flip Cards */
+        .building-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .building-card {
+            position: relative;
+            height: 120px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .building-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .building-card.flipped .building-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .building-card-front,
+        .building-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .building-card-front {
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            border: 2px solid #E5E7EB;
+            color: #6B7280;
+        }
+
+        .building-card-back {
+            background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .building-card.selected .building-card-front {
+            border-color: #2563EB;
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #2563EB;
+        }
+
+        /* Urgency Selector - Glowing Buttons */
+        .urgency-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .urgency-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            background: #FFFFFF;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .urgency-btn:hover {
+            border-color: #2563EB;
+            color: #2563EB;
+            transform: translateY(-2px);
+        }
+
+        .urgency-btn.selected {
+            border-color: #2563EB;
+            background: #2563EB;
+            color: white;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(37, 99, 235, 0.6);
+            }
+        }
+
+        /* Enhanced Form Fields */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #111827;
+            font-size: 0.95rem;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #FFFFFF;
+            color: #111827;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            transform: scale(1.02);
+        }
+
+        .form-group select:hover,
+        .form-group input:hover,
+        .form-group textarea:hover {
+            border-color: #D1D5DB;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Submit Button with Flying Animation */
+        .submit-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn.flying {
+            animation: flyAway 1.5s ease-in-out forwards;
+        }
+
+        @keyframes flyAway {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+            100% {
+                transform: translateX(100vw) translateY(-100px) rotate(45deg);
+            }
+        }
+
+        .paper-plane {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn.flying .paper-plane {
+            opacity: 1;
+        }
+
         /* Login Form */
         .login-section {
             display: flex;
@@ -126,25 +467,6 @@
             text-align: center;
             margin-bottom: 30px;
             color: #2c3e50;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
         }
 
         .btn {
@@ -281,6 +603,15 @@
         .role-agent { background: #f39c12; color: white; }
         .role-viewer { background: #95a5a6; color: white; }
 
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
         /* Password Change Form */
         .password-change {
             display: none;
@@ -399,6 +730,9 @@
                     <div class="nav-item active" data-section="tickets">
                         📋 Tickets
                     </div>
+                    <div class="nav-item" data-section="create-ticket">
+                        ✨ Create Ticket
+                    </div>
                     <div class="nav-item" data-section="departments">
                         🏢 Departments
                     </div>
@@ -457,6 +791,118 @@
                             Loading tickets...
                         </div>
                         <div id="tickets-table"></div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Ticket Creation Section -->
+                <div id="create-ticket-section" class="content-section">
+                    <div class="ticket-creation-section">
+                        <div class="form-header">
+                            <h2>✨ Create New Support Ticket</h2>
+                            <p>Enhanced ticket creation with interactive selectors</p>
+                        </div>
+                        
+                        <div class="form-container">
+                            <form id="enhanced-ticket-form">
+                                <div class="form-grid">
+                                    <!-- Building Selector with Flip Cards -->
+                                    <div class="form-group">
+                                        <label>🏢 Select Building</label>
+                                        <div class="building-selector" id="building-selector">
+                                            <!-- Building cards will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Floor Selector with Rotating Dial -->
+                                    <div class="form-group">
+                                        <label>🏗️ Select Floor</label>
+                                        <div class="floor-selector">
+                                            <div class="floor-dial" id="floor-dial">
+                                                <div class="floor-indicator"></div>
+                                                <!-- Floor ticks will be populated by JavaScript -->
+                                            </div>
+                                            <div class="floor-controls">
+                                                <button type="button" class="floor-btn" onclick="rotateFloor('left')">
+                                                    <i class="fas fa-chevron-left"></i> Left
+                                                </button>
+                                                <button type="button" class="floor-btn" onclick="rotateFloor('right')">
+                                                    Right <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            </div>
+                                            <div class="floor-display" id="floor-display">Floor 1</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Department Dropdown -->
+                                    <div class="form-group">
+                                        <label for="department">👥 Department</label>
+                                        <select id="department" name="department" required>
+                                            <option value="">Select department</option>
+                                            <option value="IT">Information Technology</option>
+                                            <option value="HR">Human Resources</option>
+                                            <option value="Finance">Finance</option>
+                                            <option value="Marketing">Marketing</option>
+                                            <option value="Operations">Operations</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Problem Type Dropdown -->
+                                    <div class="form-group">
+                                        <label for="issue-type">🔧 Problem Type</label>
+                                        <select id="issue-type" name="issue_type" required>
+                                            <option value="">Select problem type</option>
+                                            <option value="WiFi Connectivity">WiFi Connection Issues</option>
+                                            <option value="Printer Issues">Printer Problems</option>
+                                            <option value="Projector Setup">Projector Setup</option>
+                                            <option value="Computer Hardware">Computer Hardware</option>
+                                            <option value="Software Installation">Software Installation</option>
+                                            <option value="Email Issues">Email Problems</option>
+                                            <option value="Network Issues">Network Issues</option>
+                                            <option value="Other">Something Else</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Urgency Selector with Glowing Buttons -->
+                                    <div class="form-group">
+                                        <label>🚨 Urgency Level</label>
+                                        <div class="urgency-selector">
+                                            <button type="button" class="urgency-btn" data-urgency="low">
+                                                🟢 Low
+                                            </button>
+                                            <button type="button" class="urgency-btn selected" data-urgency="medium">
+                                                🟡 Medium
+                                            </button>
+                                            <button type="button" class="urgency-btn" data-urgency="high">
+                                                🟠 High
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Contact Information -->
+                                    <div class="form-group">
+                                        <label for="contact-person">👤 Contact Person</label>
+                                        <input type="text" id="contact-person" name="contact_person" placeholder="Who should we contact?">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="phone-number">📞 Phone Number</label>
+                                        <input type="tel" id="phone-number" name="phone_number" placeholder="Your phone number">
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="form-group full-width">
+                                    <label for="description">📝 Description</label>
+                                    <textarea id="description" name="description" rows="4" placeholder="Describe what's happening, when it started, and any error messages you're seeing..." required></textarea>
+                                </div>
+
+                                <!-- Submit Button with Flying Animation -->
+                                <button type="submit" class="submit-btn" id="submit-btn">
+                                    <span class="paper-plane">✈️</span>
+                                    <span class="btn-text">Send Ticket</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 

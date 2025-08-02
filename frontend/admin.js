@@ -2,6 +2,10 @@ class AdminModule {
     constructor() {
         this.token = localStorage.getItem('admin_token');
         this.user = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        this.currentFloor = 1;
+        this.totalFloors = 10;
+        this.selectedBuilding = null;
+        this.selectedUrgency = 'medium';
         this.init();
     }
 
@@ -9,6 +13,7 @@ class AdminModule {
         this.setupEventListeners();
         this.checkAuthStatus();
         this.loadAIHealthStatus();
+        this.initializeEnhancedForm();
     }
 
     setupEventListeners() {
@@ -24,12 +29,246 @@ class AdminModule {
             this.handlePasswordChange();
         });
 
+        // Enhanced ticket form
+        document.getElementById('enhanced-ticket-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleEnhancedTicketSubmission(e);
+        });
+
       
         document.querySelectorAll('.nav-item[data-section]').forEach(item => {
             item.addEventListener('click', (e) => {
                 this.showSection(e.target.dataset.section);
             });
         });
+    }
+
+    // Initialize enhanced form components
+    initializeEnhancedForm() {
+        this.createFloorDial();
+        this.createBuildingCards();
+        this.setupUrgencyButtons();
+    }
+
+    // Create floor dial with ticks
+    createFloorDial() {
+        const floorDial = document.getElementById('floor-dial');
+        if (!floorDial) return;
+
+        // Clear existing ticks
+        const existingTicks = floorDial.querySelectorAll('.floor-tick');
+        existingTicks.forEach(tick => tick.remove());
+
+        // Create ticks for each floor
+        for (let i = 1; i <= this.totalFloors; i++) {
+            const tick = document.createElement('div');
+            tick.className = 'floor-tick';
+            tick.style.transform = `rotateZ(${(i - 1) * (360 / this.totalFloors)}deg)`;
+            tick.setAttribute('data-floor', i);
+            floorDial.appendChild(tick);
+        }
+
+        this.updateFloorDisplay();
+    }
+
+    // Create building cards
+    createBuildingCards() {
+        const buildingSelector = document.getElementById('building-selector');
+        if (!buildingSelector) return;
+
+        const buildings = [
+            { id: 1, name: 'Main Building', code: 'MB' },
+            { id: 2, name: 'Science Wing', code: 'SW' },
+            { id: 3, name: 'Library', code: 'LB' },
+            { id: 4, name: 'Student Center', code: 'SC' }
+        ];
+
+        buildingSelector.innerHTML = buildings.map(building => `
+            <div class="building-card" data-building-id="${building.id}">
+                <div class="building-card-inner">
+                    <div class="building-card-front">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">🏢</div>
+                        <div style="font-weight: 600; font-size: 0.9rem;">${building.name}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">${building.code}</div>
+                    </div>
+                    <div class="building-card-back">
+                        <div style="font-size: 1.2rem;">✓</div>
+                        <div style="font-size: 0.8rem;">Selected</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        // Add click event listeners
+        buildingSelector.querySelectorAll('.building-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.selectBuilding(card);
+            });
+        });
+    }
+
+    // Setup urgency buttons
+    setupUrgencyButtons() {
+        const urgencyButtons = document.querySelectorAll('.urgency-btn');
+        urgencyButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.selectUrgency(btn);
+            });
+        });
+    }
+
+    // Select building
+    selectBuilding(card) {
+        // Remove previous selection
+        document.querySelectorAll('.building-card').forEach(c => {
+            c.classList.remove('selected', 'flipped');
+        });
+
+        // Add selection to clicked card
+        card.classList.add('selected', 'flipped');
+        this.selectedBuilding = card.dataset.buildingId;
+
+        // Auto-unflip after animation
+        setTimeout(() => {
+            card.classList.remove('flipped');
+        }, 600);
+    }
+
+    // Select urgency
+    selectUrgency(button) {
+        // Remove previous selection
+        document.querySelectorAll('.urgency-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+
+        // Add selection to clicked button
+        button.classList.add('selected');
+        this.selectedUrgency = button.dataset.urgency;
+    }
+
+    // Rotate floor dial
+    rotateFloor(direction) {
+        if (direction === 'left') {
+            this.currentFloor = this.currentFloor > 1 ? this.currentFloor - 1 : this.totalFloors;
+        } else {
+            this.currentFloor = this.currentFloor < this.totalFloors ? this.currentFloor + 1 : 1;
+        }
+
+        this.updateFloorDisplay();
+        this.updateFloorDial();
+    }
+
+    // Update floor display
+    updateFloorDisplay() {
+        const floorDisplay = document.getElementById('floor-display');
+        if (floorDisplay) {
+            floorDisplay.textContent = `Floor ${this.currentFloor}`;
+        }
+    }
+
+    // Update floor dial visual
+    updateFloorDial() {
+        const floorDial = document.getElementById('floor-dial');
+        if (!floorDial) return;
+
+        // Update active tick
+        const ticks = floorDial.querySelectorAll('.floor-tick');
+        ticks.forEach(tick => {
+            tick.classList.remove('active');
+            if (parseInt(tick.dataset.floor) === this.currentFloor) {
+                tick.classList.add('active');
+            }
+        });
+
+        // Rotate dial
+        const rotation = (this.currentFloor - 1) * (360 / this.totalFloors);
+        floorDial.style.transform = `rotateZ(${-rotation}deg)`;
+    }
+
+    // Handle enhanced ticket submission
+    async handleEnhancedTicketSubmission(event) {
+        const formData = new FormData(event.target);
+        
+        // Add selected values from interactive components
+        formData.append('floor', this.currentFloor.toString());
+        formData.append('building', this.selectedBuilding || '');
+        formData.append('priority', this.selectedUrgency);
+
+        const ticketData = {
+            building: this.selectedBuilding,
+            floor: this.currentFloor,
+            department: formData.get('department'),
+            issue_type: formData.get('issue_type'),
+            description: formData.get('description'),
+            contact_person: formData.get('contact_person'),
+            phone_number: formData.get('phone_number'),
+            priority: this.selectedUrgency
+        };
+
+        // Validate required fields
+        if (!ticketData.building || !ticketData.department || !ticketData.issue_type || !ticketData.description) {
+            this.showErrorMessage('Please fill in all required fields');
+            return;
+        }
+
+        // Animate submit button
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.classList.add('flying');
+
+        try {
+            const response = await fetch('/api/tickets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`
+                },
+                body: JSON.stringify(ticketData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.showSuccessMessage('Ticket created successfully!');
+                
+                // Reset form after animation
+                setTimeout(() => {
+                    this.resetEnhancedForm();
+                    submitBtn.classList.remove('flying');
+                }, 1500);
+            } else {
+                this.showErrorMessage(data.message || 'Failed to create ticket');
+                submitBtn.classList.remove('flying');
+            }
+        } catch (error) {
+            this.showErrorMessage('Network error. Please try again.');
+            submitBtn.classList.remove('flying');
+        }
+    }
+
+    // Reset enhanced form
+    resetEnhancedForm() {
+        // Reset form fields
+        document.getElementById('enhanced-ticket-form').reset();
+        
+        // Reset interactive components
+        this.currentFloor = 1;
+        this.selectedBuilding = null;
+        this.selectedUrgency = 'medium';
+        
+        // Reset building selection
+        document.querySelectorAll('.building-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Reset urgency selection
+        document.querySelectorAll('.urgency-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        document.querySelector('[data-urgency="medium"]').classList.add('selected');
+        
+        // Reset floor dial
+        this.updateFloorDisplay();
+        this.updateFloorDial();
     }
 
     async handleLogin() {
@@ -143,6 +382,7 @@ class AdminModule {
        
         const titles = {
             'tickets': 'Tickets',
+            'create-ticket': 'Create Ticket',
             'departments': 'Departments',
             'buildings': 'Buildings & Floors',
             'users': 'Team Members',
@@ -571,6 +811,13 @@ function addUser() {
 function checkAIHealth() {
     adminModule.loadAIHealthStatus();
     adminModule.showSuccessMessage('AI health check completed');
+}
+
+// Global functions for enhanced ticket form
+function rotateFloor(direction) {
+    if (adminModule) {
+        adminModule.rotateFloor(direction);
+    }
 }
 
 // Initialize admin module when page loads
